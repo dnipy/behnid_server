@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang=ar dir=rtl>
+    
+    <%- include('../../partials/head.ejs') %> 
+   <body>
+    <%- include('../../partials/navbar.ejs') %> 
+
+
+
+   <div class=container-fluid>
+    <div class=row>
+    <%- include('../../partials/sideNav.ejs') %> 
+    <main class="col-md-9 ms-sm-auto col-lg-8 px-md-4">
+      <h1 class="p-5" >افزودن بلاگ</h1>
+
+
+      <div class="mt-5">
+          <form method="post" action="/super-admin/blog/add" >
+            <input class="form-control" type="text" placeholder="تایتل بلاگ" name="title" >
+            <br>
+            <textarea placeholder="توضیحات بلاگ" class="form-control" name="describe" id="exampleFormControlTextarea1" rows="3"></textarea>
+            <br>
+            <input type="submit" class="btn btn-primary mb-3 col-12" value="تایید" />
+          </form>
+      </div>
+    </main>
+    </div>
+   </div>
+    
+    
+    
+</body>
+</html>

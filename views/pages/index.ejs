@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang=ar dir=rtl>
+    
+    <%- include('../partials/head.ejs') %> 
+   <body>
+    <%- include('../partials/navbar.ejs') %> 
+
+
+
+   <div class=container-fluid>
+    <div class=row>
+    <%- include('../partials/sideNav.ejs') %> 
+    <main class="col-md-9 ms-sm-auto col-lg-8 px-md-4 ">
+        <h1 class="p-4 "  style="text-align: center;" >  صفحه اصلی </h1>
+
+            <div>    
+                <h3 class="p-3" > #بلاگ</h3>
+                <ul class="list-group">
+                    <h5 class="list-group-item  bg-warning text-dark" aria-current="true">صفحه اصلی بلاگ</h5>
+                    <a href="/super-admin/blog/add" class="list-group-item">افزودن بلاگ</a>
+                    <a href="/super-admin/blog/all" class="list-group-item">لیست بلاگ ها</a>
+                    <!-- <a class="list-group-item">اپدیت</a> -->
+                </ul>
+            </div>
+
+            <br>
+
+            <div>    
+                <h3 class="p-3" > #تیکت ها</h3>
+                <ul class="list-group">
+                    <h5 class="list-group-item  bg-warning text-dark" aria-current="true">صفحه اصلی تیکت</h5>
+                    <a class="list-group-item"  href="/super-admin/tickets">لیست تمام تیکت ها</a>
+                </ul>
+            </div>
+
+            <br>
+
+            <div>    
+                <h3 class="p-3" > #کاربران</h3>
+                <ul class="list-group">
+                    <h5 class="list-group-item  bg-warning text-dark" aria-current="true">صفحه اصلی کاربران</h5>
+                    <a class="list-group-item" href="/super-admin/users/all" >مدیریت کاربران</a>
+                    <a class="list-group-item" href="/super-admin/users/all" >لیست تمام کاربران</a>
+                </ul>
+            </div>
+
+
+            <br>
+
+            <div>    
+                <h3 class="p-3" > #درخواست های فروشندگی</h3>
+                <ul class="list-group">
+                    <h5 class="list-group-item  bg-warning text-dark" aria-current="true">صفحه اصلی درخواست ها</h5>
+                    <a class="list-group-item" href="/super-admin/seller-requests/all" >تمام درخواست ها</a>
+                </ul>
+            </div>
+
+            <br>
+
+            <div>    
+                <h3 class="p-3" > #تنظیمات هدر و سایت</h3>
+                <ul class="list-group">
+                    <h5 class="list-group-item  bg-warning text-dark" aria-current="true">صفحه هدر و سایت</h5>
+                    <a class="list-group-item">عکس های ایندکس</a>
+                    <a class="list-group-item">مدیریت کتگوری ها</a>
+                    <a class="list-group-item">تنظیمات صفحه ارتباط با ما</a>
+
+                </ul>
+            </div>
+            <br>
+            <div class="mt-5">
+            </div>
+    </main>
+    </div>
+   </div>
+    
+    
+    
+</body>
+</html>

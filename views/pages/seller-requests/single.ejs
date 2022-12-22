@@ -1,0 +1,67 @@
+<html lang="en" dir="rtl">
+<head>
+    <%- include('../../partials/head.ejs') %> 
+</head>
+<body>
+    <div class="col-12">
+
+        <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"  >
+            
+            <div class="card text-center w-50 h-75 " >
+                <div class="card-body">
+                    <h5 class="card-title mb-5">
+                        نام کاربری :    <%= seller?.name %> 
+                    </h5>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        شماره تلفن :    <%= seller?.phone %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                      ایمیل :     <%= seller?.email %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        نوع درخواست :      <%= seller?.sellerProfile?.sellerType %> 
+                    </h6>
+                   
+                    <% if(seller?.sellerProfile?.sellerType == "person"){ %>
+                        <a href="<%= seller?.sellerProfile?.person_1 ? seller?.sellerProfile?.person_1 : null  %>">تصویر کارت ملی</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.person_2 ? seller?.sellerProfile?.person_2 : null %>" >تصویر متنی کارت ملی و تصویر شخص</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.person_3 ? seller?.sellerProfile?.person_3 : null %>" >تصویر جواز کسب</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.person_4  ? seller?.sellerProfile?.person_4 : null %>" >تصویر اجاره نامه یا سند کسب مالکیت محل کسب</a>
+
+                      <% } else if (seller?.sellerProfile?.sellerType == "company"){ %>  
+
+                        <a href="<%= seller?.sellerProfile?.company_1 ? seller?.sellerProfile?.company_1 : null %>">تصویر جواز تاسیس</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.company_2 ? seller?.sellerProfile?.company_2 : null %>">تصویر اساسنامه</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.company_3 ? seller?.sellerProfile?.company_3 : null %>">تصویر آخرین تغییرات روزنامه رسمی</a>
+                        <br>
+                        <a href="<%= seller?.sellerProfile?.company_4 ? seller?.sellerProfile?.company_4 : null %>">تصویر اجاره نامه یا سند کسب مالکیت محل کسب</a>
+                        
+                     <% } %>
+                     <br>
+
+
+                     <div class="mb-5 mt-5">
+                        <form  action="/super-admin/seller-requests/set-status?id=<%= seller?.id  %>"  method="post" >
+                            <label for="exampleFormControlTextarea1" class="form-label">پاسخ شما</label>
+                     
+                            <br>
+                            <input type="submit" name="status" class="btn btn-primary mb-3 col-5" value="accepted" />
+                            <input type="submit" name="status" class="btn btn-danger mb-3 col-5" value="rejected" />
+
+                        </form>
+                    </div>
+
+                    <a href="/super-admin/" class="card-link btn btn-warning m-3 ">بازگشت</a>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    </body>
+    </html>

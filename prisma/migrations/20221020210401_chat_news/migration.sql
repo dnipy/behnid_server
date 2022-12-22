@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Chats" ALTER COLUMN "userOneId" DROP DEFAULT,
+ALTER COLUMN "userTwoId" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "message" ALTER COLUMN "recieverId" DROP DEFAULT,
+ALTER COLUMN "senderId" DROP DEFAULT;

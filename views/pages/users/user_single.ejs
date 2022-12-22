@@ -1,0 +1,44 @@
+<html lang="en" dir="rtl">
+<head>
+    <%- include('../../partials/head.ejs') %> 
+</head>
+<body>
+    <div class="col-12">
+
+        <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"  >
+            
+            <div class="card text-center w-50 h-50 " >
+                <div class="card-body">
+                    <h5 class="card-title mb-5">
+                        نام کاربری :    <%= user?.name %> 
+                    </h5>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        شماره تلفن :    <%= user?.phone %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                      ایمیل :     <%= user?.email %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        تایپ یوزر :   <%= user?.Role %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                      فعال :  <%= user?.status %> 
+                    </h6>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        شهر :   <%= user?.cityName ? user?.cityName : "نامشخص " %> 
+                    </h6>
+                    <br>
+                    <p class="card-text">
+                        بیو : <%= user?.bio ? user?.bio : "ندارد"  %> 
+                    </p>
+                    
+                    
+                    <a href="/super-admin/" class="card-link ">بازگشت</a>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    </body>
+    </html>

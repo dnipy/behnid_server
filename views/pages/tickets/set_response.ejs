@@ -1,0 +1,40 @@
+<html lang="en" dir="rtl">
+<head>
+    <%- include('../../partials/head.ejs') %> 
+</head>
+<body>
+    <div class="col-12">
+
+        <div class="w-100 h-100 d-flex align-items-center justify-content-center"  >
+            
+            <div class="card text-center w-50 h-50 " >
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <%= data?.data?.user?.name %> 
+                    </h5>
+                    <h6 class="card-subtitle mb-2 mt-2 text-muted">
+                        <%= data?.data?.user?.phone %> 
+                    </h6>
+                    <br>
+                    <p class="card-text">
+                        <%= data?.data?.message %> 
+                    </p>
+                    
+                    <div class="mb-5 mt-5">
+                        <form method="post" action="/super-admin/tickets/response?id=<%= data?.id  %> " >
+                            <label for="exampleFormControlTextarea1" class="form-label">پاسخ شما</label>
+                            <textarea name="response" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                            <br>
+                            <input type="submit" class="btn btn-primary mb-3 col-12" value="تایید" />
+                        </form>
+                    </div>
+                    
+                    <a href="/super-admin/" class="card-link ">بازگشت</a>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    </body>
+    </html>

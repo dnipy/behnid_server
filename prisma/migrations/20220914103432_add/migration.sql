@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "FreeRequests" ALTER COLUMN "cityId" DROP NOT NULL,
+ALTER COLUMN "cityId" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "cityId" DROP NOT NULL,
+ALTER COLUMN "cityId" DROP DEFAULT;
