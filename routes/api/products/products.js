@@ -50,11 +50,11 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                                 producerPrice: producerPrice,
                                 weight,
                                 sendArea,
-                                // categorie : {
-                                //     connect : {
-                                //         name : catName
-                                //     }
-                                // }
+                                categorie : {
+                                    connect : {
+                                        name : catName
+                                    }
+                                }
                             },
                         },
                     },
@@ -121,11 +121,11 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                                     producerPrice: Number(producerPrice),
                                     weight,
                                     sendArea,
-                                    // categorie : {
-                                    //     connect : {
-                                    //         name : catName
-                                    //     }
-                                    // }
+                                    categorie : {
+                                        connect : {
+                                            name : catName
+                                        }
+                                    }
                                 },
                             },
                         },

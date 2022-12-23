@@ -187,6 +187,8 @@ model Product {
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
   city            City?                 @relation(references: [id],fields: [cityId],onDelete: Cascade)
+  freeDelivery    Boolean               @default(false)
+  force           Boolean               @default(false)
 }
 
 
