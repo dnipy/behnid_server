@@ -18,7 +18,7 @@ sellersRoute.get("/all", async (req, res) => {
             skip: parseInt(start) - 1,
             take: parseInt(length),
             where: {
-                Role: "Seller",
+                Role: "Seller"
             },
         })
         .then((dta) => {

@@ -208,6 +208,44 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
     }
 })
 
+
+
+
+productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
+    const {id} = req.query
+    
+    try {
+        await prisma.product
+            .findFirst({
+                where : {
+                    AND : {
+                        author : {
+                            phone: req.userData.userPhone
+                        },
+                        id : Number(id)
+                    }
+                },
+                include : {
+                    requests : {
+                        include : {
+                            RequestAuthor : true
+                        }
+                    },
+                    comments : true
+                }
+            })
+            .then((dta) => {
+                return res.json(dta)
+            })
+            .catch((e) => {
+                return res.json({ err: e })
+            })
+    } catch (err) {
+        return res.json({ err: "ارور" })
+    }
+})
+
+
 productsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
     const { id } = req.body
     const IntID = parseInt(id)
