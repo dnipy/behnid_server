@@ -33,6 +33,8 @@ model User {
   Role                           userRole      @default(Buyer)
   avatar                         String?
   profile                        Profile?
+  isShown                        Boolean       @default(true)
+
 
 
   
@@ -72,6 +74,8 @@ model User {
   followers                      Connections[]             @relation("following")
   following                      Connections[]             @relation("follower")
   stories                        stories[]
+
+  
 
   
   @@unique([id, name])
@@ -179,16 +183,17 @@ model Product {
   deliveryTime    String
   authorID        Int  
   imgsrc          String?  
-  cityId          Int?
+  cityName        String?
   seenTime        Int                   @default(0)
   //relations
   author          User                  @relation(fields: [authorID],references: [id],onDelete: Cascade )
   categorie       Category[]            @relation()
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
-  city            City?                 @relation(references: [id],fields: [cityId],onDelete: Cascade)
+  city            City?                 @relation(references: [name],fields: [cityName],onDelete: Cascade)
   freeDelivery    Boolean               @default(false)
   force           Boolean               @default(false)
+  isShown         Boolean               @default(true)
 }
 
 
@@ -231,7 +236,7 @@ model commentsForProductsComments {
 
 model City {
   id    Int    @id @default(autoincrement())
-  name  String
+  name  String  @unique
   provienceId   Int
   provienceName   String
   products Product[] @relation()
@@ -241,6 +246,7 @@ model City {
   sellers sellerProfile[]
 
   @@unique([id, name])
+  
 }
 
 
@@ -289,6 +295,7 @@ model FreeRequests {
   acceptedBy    User[]    @relation(name :"acceptedBy")   
   Author  User  @relation(name:"Author",fields: [authorID],references: [id],onDelete: Cascade)
   city        City?     @relation(references: [id],fields: [cityId],onDelete: Cascade)
+  isShown         Boolean               @default(true)
 }
 
 

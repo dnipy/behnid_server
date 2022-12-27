@@ -2,7 +2,7 @@ import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 const productsRoute = express.Router()
 
 productsRoute.get("/", (req, res) => {
@@ -53,8 +53,9 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                                 categorie : {
                                     connect : {
                                         name : catName
-                                    }
-                                }
+                                    } 
+                                },
+                                
                             },
                         },
                     },
@@ -154,13 +155,16 @@ productsRoute.get("/all", async (req, res) => {
     if (!start || !length)
         return res.json({ msg: "need both start and length query-params!" })
 
-    const IntLenght = parseInt(length)
+
 
     try {
         await prisma.product
             .findMany({
-                skip: parseInt(start) - 1,
-                take: parseInt(length),
+                where: {
+                    isShown : true
+                },
+                skip: Number(start) - 1,
+                take: Number(length),
                 include: {
                     author: true,
                     city: true,
@@ -248,7 +252,10 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
 
 productsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
     const { id } = req.body
-    const IntID = parseInt(id)
+
+    if (!id) return res.json({ err: "ایدی وارد نشده است" })
+
+
     try {
         await prisma.user
             .update({
@@ -257,9 +264,15 @@ productsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
                 },
                 data: {
                     products: {
-                        delete: {
-                            id: IntID,
+                        update : {
+                            where : {
+                                id : Number(id)
+                            },
+                            data : {
+                                isShown : false
+                            }
                         },
+                        
                     },
                 },
             })

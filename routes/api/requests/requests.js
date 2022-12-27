@@ -49,10 +49,13 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
 requestsRoute.get("/all", async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
-        return res.json({ msg: "need both start and length query-params!" })
+        return res.json({ err: "need both start and length query-params!" })
 
     await prisma.freeRequests
         .findMany({
+            where : {
+                isShown : true
+            },
             skip: parseInt(start) - 1,
             take: parseInt(length),
             include: {
@@ -167,7 +170,6 @@ requestsRoute.get("/single", async (req, res) => {
 requestsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
     const { id } = req.body
     if (!id) return res.json({ msg: "ایدی درخواست وارد نشده است" })
-    const IntId = parseInt(id)
 
     await prisma.user
         .update({
@@ -176,9 +178,14 @@ requestsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
             },
             data: {
                 freeRequests: {
-                    delete: {
-                        id: IntId,
-                    },
+                    update : {
+                        where : {
+                            id : Number(id)
+                        },
+                        data : {
+                            isShown : false
+                        }
+                    }
                 },
             },
         })

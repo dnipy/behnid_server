@@ -25,6 +25,9 @@ usersRoute.get("/all", async (req, res) => {
         return res.json({ msg: "کوئری پارامتر های شروع و پایان اجباری است" })
 
      await prisma.user.findMany({
+        where : {
+            isShown : true
+        },
         skip: parseInt(start) - 1,
         take: parseInt(length),
     }).then(data=>{
@@ -52,14 +55,17 @@ usersRoute.get("/single", async (req, res) => {
 
 usersRoute.delete("/delete", async (req, res) => {
     const { userID } = req.query
-    
-    if (!userID) return res.json({ msg: "یوزر آیدی را وارد کنید" })
-    const intUserId = parseInt(userID)
+
+    if (!userID) return res.json({ err: "ایدی وارد نشده است" })
+
     await prisma.user
-        .delete({
+        .update({
             where: {
-                id: intUserId,
+                id: Number(id),
             },
+            data : {
+                isShown : false
+            }
         }).then(()=>{
             return res.json({msg : 'موفق'})
         })
