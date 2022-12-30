@@ -171,6 +171,8 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
             },
             include: {
                 message: true,
+                userOne : true,
+                userTwo : true
             },
         })
         .then((resp) => {

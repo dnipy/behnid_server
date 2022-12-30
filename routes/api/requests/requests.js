@@ -10,7 +10,7 @@ requestsRoute.get("/", (req, res) => {
 })
 
 requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
-    const { name, catName, describe, cityName } = req.body
+    const { name, catName, describe, City } = req.body
     console.log(req.body)
 
     prisma.user
@@ -22,18 +22,18 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                 freeRequests: {
                     create: {
                         name,
-                        // categorie : {
-                        //     connect : {
-                        //         name : catName
-                        //     }
-                        // },
+                        categorie : {
+                            connect: {
+                                name : catName
+                            }
+                        },
                         describe: describe,
                         imgsrc: "",
-                        // city : {
-                        //     connect : {
-                        //         id : parseInt(cityID)
-                        //     }
-                        // },
+                        city : {
+                            connect : {
+                                name : City
+                            }
+                        },
                     },
                 },
             },

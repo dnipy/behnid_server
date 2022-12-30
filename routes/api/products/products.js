@@ -22,6 +22,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
         weight,
         deliveryTime,
         catName,
+        City
     } = req.body
 
     console.log(req.body)
@@ -55,6 +56,11 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                                         name : catName
                                     } 
                                 },
+                                city : {
+                                    connect : {
+                                        name : City
+                                    }
+                                }
                                 
                             },
                         },

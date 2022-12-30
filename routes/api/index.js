@@ -6,18 +6,18 @@ const IndexRoute = express.Router()
 
 IndexRoute.get("/", async (req, res) => {
     try {
-        const lastTenProducts = await prisma.product.findMany({ take: 10 })
-        const lastTenRequests = await prisma.freeRequests.findMany({ take: 10 })
-        const lastTenBlogs = await prisma.blog.findMany({ take: 10 })
+        const lastFiveProducts = await prisma.product.findMany({ take: 5 })
+        const lastFiveRequests = await prisma.freeRequests.findMany({ take: 5 })
+        // const lastTenBlogs = await prisma.blog.findMany({ take: 10 })
         const lastFiveSeller = await prisma.user.findMany({
             take: 5,
             where: { Role: "Seller" },
         })
 
         return res.json({
-            lastTenProducts,
-            lastTenBlogs,
-            lastTenRequests,
+            // lastTenBlogs,
+            lastFiveProducts,
+            lastFiveRequests,
             lastFiveSeller,
         })
     } catch {
