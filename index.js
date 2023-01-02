@@ -9,6 +9,16 @@ import { apiRoute } from "./routes/api.routes.js"
 import { superAdminRoute } from "./routes/superadmin.routes.js"
 import bodyParser from "body-parser"
 
+
+const corsOpts = {
+    origin: 'https://behnid.com',
+    credentials: true,
+    methods: ['GET','POST','HEAD','PUT','PATCH','DELETE'],
+    allowedHeaders: ['Content-Type','Authorization'],
+    exposedHeaders: ['Content-Type'],
+    optionsSuccessStatus: 200,
+};
+
 // ? Inintials
 export const app = express()
 const port = process.env.PORT || 3001
@@ -17,16 +27,16 @@ const httpServer = http.createServer(app)
 // ? middlewares
 app.use(express.json())
 app.use(helmet({ crossOriginResourcePolicy: false }))
-app.use(cors())
+app.use(cors(corsOpts)) 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.set("view engine", "ejs")
 
 // ? Routes
 app.get("/", indexController)
 app.use("/api", apiRoute)
-app.get("/for-cutie-asal", (req, res) => {
-    res.render("pages/asal")
-})
+// app.get("/for-cutie-asal", (req, res) => {
+//     res.render("pages/asal")
+// })
 app.use("/super-admin", superAdminRoute)
 
 // ? statics

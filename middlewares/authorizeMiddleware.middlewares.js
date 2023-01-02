@@ -4,6 +4,7 @@ import { config } from "dotenv"
 config()
 
 function authorizeMiddleware(req, res, next) {
+    // console.log('recived')
     const authHeader = req.headers["authorization"]
     const token = authHeader ? authHeader.split(" ")[1] : null
 

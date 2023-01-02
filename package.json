@@ -8,7 +8,8 @@
         "test": "jest --watch",
         "start": "node index.js",
         "dev": "nodemon index.js",
-        "prettier": "npx prettier --write ."
+        "prettier": "npx prettier --write .",
+        "deploy" : "pm2 start npm --name expressjs -- run start -- -p 3001"
     },
     "keywords": [
         "behnid",
