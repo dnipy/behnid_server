@@ -9,7 +9,7 @@
         "start": "node index.js",
         "dev": "nodemon index.js",
         "prettier": "npx prettier --write .",
-        "deploy" : "pm2 start npm --name expressjs -- run start -- -p 3001"
+        "deploy" : "pm2 delete expressjs && pm2 start npm --name expressjs -i max -- run start -- -p 3001 "
     },
     "keywords": [
         "behnid",
