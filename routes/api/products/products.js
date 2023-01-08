@@ -177,6 +177,9 @@ productsRoute.get("/all", async (req, res) => {
                     city: true,
                     categorie: true,
                 },
+                orderBy : {
+                    addDate :'desc'
+                }
             })
             .then((data) => {
                 data.forEach(elm=>{
