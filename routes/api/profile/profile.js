@@ -1,6 +1,7 @@
 import express from "express"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { PrismaClient } from "@prisma/client"
+import { excludePass } from "../../../funcs/ExcludePass.js"
 
 const profileRoute = express.Router()
 const prisma = new PrismaClient()
@@ -26,8 +27,10 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
                 sellerProfile: true,
             },
         })
-        .then((dta) => {
-            return res.json(dta)
+        .then((data) => {
+            
+            excludePass(data,['password'])
+            return res.json(data)
         })
         .catch((e) => {
             return res.json({ msg: e })

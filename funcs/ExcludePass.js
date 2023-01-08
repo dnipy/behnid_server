@@ -1,7 +1,6 @@
-export async function excludePasswordMiddleware(params, next) {
-    const result = await next(params)
-    if (params?.model === 'User' && params?.args?.select?.password !== true) {
-      delete result.password
-    }
-    return result
+export function excludePass( user , keys ) {
+  for (let key of keys) {
+    delete user[key]
+  }
+  return user
 }

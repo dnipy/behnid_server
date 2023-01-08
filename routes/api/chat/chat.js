@@ -3,6 +3,8 @@ import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { uploads } from "../../../middlewares/upload.js"
+import { uploadAudio } from "../../../middlewares/voice_uploads.js"
+import { excludePass } from "../../../funcs/ExcludePass.js"
 
 let prisma = new PrismaClient()
 
@@ -81,6 +83,88 @@ chatRoute.post("/newChat", authorizeMiddleware, async (req, res) => {
     }
 })
 
+
+
+
+
+
+chatRoute.post("/newChat-with-number", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req.body
+    if (!userPhone) return res.json({ error: 1 })
+
+
+    const my_id = await prisma.user
+        .findUnique({ where: { phone: req.userData?.userPhone } })
+        .catch((err) => {
+            return res.json({ err: "ارور هنگام لود دیتا" })
+    })
+     
+    const user_id = await prisma.user.findUnique({
+        where : {
+            phone : userPhone
+        }
+    }).catch((err) => {
+        return res.json({ err: "یوزری با این شماره تلفن در بهنید یافت نشد" })
+    })
+    
+
+    const chat = await prisma.chats
+        .findFirst({
+            where: {
+                OR: [
+                    {
+                        userOneId: Number(user_id?.id),
+                        userTwoId: Number(my_id?.id),
+                    },
+                    {
+                        userOneId: Number(my_id?.id),
+                        userTwoId: Number(user_id?.id),
+                    },
+                ],
+            },
+            include: {
+                message: true,
+                userOne: true,
+                userTwo: true,
+            }
+        })
+        .catch((err) => {
+            return res.json({ err: "2ارور هنگام لود دیتا" })
+        })
+
+    if (chat?.id) {
+        return res.json({
+            id : chat.id,
+            message: chat.message,
+            userOne: chat.userOne,
+            userTwo: chat.userTwo,
+        })
+    } else {
+        await prisma.chats
+            .create({
+                data: {
+                    userOne: {
+                        connect: {
+                            phone: req?.userData?.userPhone,
+                        },
+                    },
+                    userTwo: {
+                        connect: {
+                            id: Number(user_id?.id),
+                        },
+                    },
+                },
+            })
+            .then((resp) => {
+                return res.json(resp)
+            })
+            .catch((e) => {
+                return res.json({ e })
+            })
+    }
+})
+
+
 chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
     prisma.chats
         .findMany({
@@ -110,15 +194,31 @@ chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
                     take: 1,
                 },
             },
+            orderBy : {
+                message : {
+                    _count  : 'desc'
+                }
+            }
+
+
         })
         .then((resp) => {
             if (!resp) return res.json({ err: "یوزر پیدا نشد" })
+            resp.forEach(elm=>{
+                excludePass(elm.userOne,['password'])
+                excludePass(elm.userTwo,['password'])
+            })
+            console.log({resp})
+            // resp.sort((a,b)=>a.message.at(-1).date > b.message.at(-1).date)
+            console.log({resp2 : resp})
             return res.json(resp)
         })
         .catch((e) => {
             return res.status(500).json({ e })
         })
 })
+
+
 
 chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
     await prisma.user
@@ -130,8 +230,42 @@ chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
                 contacts: true,
             },
         })
-        .then((resp) => {
-            return res.json(resp)
+        .then(async(resp) => {
+            const ContactsInBehnid = []
+            const ContactNum = []
+            let founded_users = []
+
+
+            resp.contacts.forEach((elm)=>{
+                if (elm.contactNumber.startsWith('+98')) {
+                    const newWithoutCode = elm.contactNumber.slice(3)
+                    const newNumber = `0${newWithoutCode}`
+                    elm.contactNumber = newNumber;
+                    ContactNum.push(newNumber)
+                    ContactsInBehnid.push(elm)
+                }
+                else {
+                    console.log(elm.contactNumber)
+                    ContactNum.push(elm.contactNumber)
+                    ContactsInBehnid.push(elm)
+                }
+            })
+
+            await prisma.user.findMany({
+                where : {
+                    phone : {
+                        in : ContactNum
+                    }
+                }
+            }).then((users)=>{
+                users.forEach(elm=>{
+                    excludePass(elm,['password'])
+                })
+                founded_users = users
+            })
+
+            
+            return res.json({contacts : ContactsInBehnid , founded_users})
         })
         .catch(() => {
             return res.json({ err: "خطا در پایگاه داده" })
@@ -176,6 +310,9 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
             },
         })
         .then((resp) => {
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
+            
             return res.json(resp)
         })
         .catch((e) => {
@@ -229,6 +366,57 @@ chatRoute.post(
     }
 )
 
+
+
+
+
+chatRoute.post(
+    "/new-audio-message",
+    authorizeMiddleware,
+    uploadAudio.single("audio_image"),
+    async (req, res) => {
+        const { chatID, reciverID } = req.query
+
+        if (!chatID) return res.json({ err: 1 })
+        if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
+
+        await prisma.chats
+            .update({
+                where: {
+                    id: Number(chatID),
+                },
+                data: {
+                    message: {
+                        create: {
+                            sender: {
+                                connect: {
+                                    phone: req?.userData?.userPhone,
+                                },
+                            },
+                            reciever: {
+                                connect: {
+                                    id: Number(reciverID),
+                                },
+                            },
+                            text: "",
+                            voice : "/" + req?.file?.path,
+                        },
+                    },
+                },
+                include: {
+                    message: true,
+                },
+            })
+            .then((rsp) => {
+                return res.json(rsp)
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور در ساخت پیام", e })
+            })
+    }
+)
+
+
 chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
     const { chatID } = req.query
     if (!chatID) return res.json({ error: 1 })
@@ -247,7 +435,8 @@ chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
             },
         })
         .then((resp) => {
-            // console.log(resp)
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
             return res.json(resp)
         })
         .catch((e) => {

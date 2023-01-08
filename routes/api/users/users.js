@@ -1,18 +1,11 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
-import { excludePasswordMiddleware } from "../../../funcs/ExcludePass.js"
+import { excludePass } from "../../../funcs/ExcludePass.js"
 config()
 
 const usersRoute = express.Router()
 const prisma = new PrismaClient()
-// prisma.$use(async(params,next)=>{
-//     const result = await next(params)
-//     if (params.model === "User" && params.args?.select?.password !== true) {
-//         delete result.password
-//     }
-//     return result
-// })
 
 usersRoute.get("/", (req, res) => {
     res.send("/api/users")
@@ -24,13 +17,16 @@ usersRoute.get("/all", async (req, res) => {
     if (!start || !length)
         return res.json({ msg: "کوئری پارامتر های شروع و پایان اجباری است" })
 
-     await prisma.user.findMany({
+    await prisma.user.findMany({
         where : {
             isShown : true
         },
         skip: parseInt(start) - 1,
         take: parseInt(length),
     }).then(data=>{
+        data.forEach(elm=>{
+            excludePass(elm,['password'])
+        })
         return res.json(data)
     }).catch(()=>{
         return res.json({err : '500'})
@@ -47,6 +43,7 @@ usersRoute.get("/single", async (req, res) => {
             id: intUserId,
         },
     }).then(data=>{
+        excludePass(data,['password'])
         return res.json(data)
     }).catch(()=>{
         return res.json({err : '500'})

@@ -6,6 +6,7 @@ import {
     company_authorize,
     Person_authorize,
 } from "../../../configs/multiple_fields.js"
+import { uploadAudio } from "../../../middlewares/voice_uploads.js"
 
 const mediaRoute = express.Router()
 const prisma = new PrismaClient()
@@ -16,6 +17,10 @@ mediaRoute.get("/", (req, res) => {
 
 mediaRoute.post("/photo", uploads.single("up_file"), (req, res) => {
     return res.send("/" + req.file.path)
+})
+
+mediaRoute.post("/audio", uploadAudio.single("up_audio"), (req, res) => {
+    return res.json({path : "/" + req.file.path})
 })
 
 mediaRoute.post(

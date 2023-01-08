@@ -1,5 +1,6 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
+import { excludePass } from "../../../funcs/ExcludePass.js"
 
 const prisma = new PrismaClient()
 const sellersRoute = express.Router()
@@ -21,8 +22,11 @@ sellersRoute.get("/all", async (req, res) => {
                 Role: "Seller"
             },
         })
-        .then((dta) => {
-            return res.json(dta)
+        .then((data) => {
+            data.forEach(elm=>{
+                excludePass(elm,['password'])
+            })
+            return res.json(data)
         })
         .catch((e) => {
             return res.json({ err: e })
@@ -58,8 +62,9 @@ sellersRoute.get("/single", async (req, res) => {
                 },
             },
         })
-        .then((dta) => {
-            return res.json(dta)
+        .then((data) => {
+            excludePass(data,['password'])
+            return res.json(data)
         })
         .catch(() => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })

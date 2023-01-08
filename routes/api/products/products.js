@@ -1,6 +1,7 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
+import { excludePass } from "../../../funcs/ExcludePass.js";
 
 const prisma = new PrismaClient();
 const productsRoute = express.Router()
@@ -177,8 +178,11 @@ productsRoute.get("/all", async (req, res) => {
                     categorie: true,
                 },
             })
-            .then((dta) => {
-                return res.json(dta)
+            .then((data) => {
+                data.forEach(elm=>{
+                    excludePass(elm?.author,['password'])
+                })
+                return res.json(data)
             })
             .catch((e) => {
                 return res.json({ err: e })
@@ -207,8 +211,11 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
                 take: parseInt(length),
                 include: { author: true },
             })
-            .then((dta) => {
-                return res.json(dta)
+            .then((data) => {
+                data.forEach(elm=>{
+                    excludePass(elm?.author,['password'])
+                })
+                return res.json(data)
             })
             .catch((e) => {
                 return res.json({ err: e })
@@ -244,8 +251,11 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
                     comments : true
                 }
             })
-            .then((dta) => {
-                return res.json(dta)
+            .then((data) => {
+                
+                excludePass(data.addDate,['password'])
+                
+                return res.json(data)
             })
             .catch((e) => {
                 return res.json({ err: e })
@@ -323,6 +333,7 @@ productsRoute.get("/single", async (req, res) => {
                 },
             },
         })
+        excludePass(product.author,['password'])
         return res.json(product)
     } catch (error) {
         return res.json({ err: "محصول مورد نظر موجود نیست" })

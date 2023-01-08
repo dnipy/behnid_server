@@ -1,6 +1,7 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
+import { excludePass } from "../../../funcs/ExcludePass.js"
 
 const requestsRoute = express.Router()
 const prisma = new PrismaClient()
@@ -71,8 +72,11 @@ requestsRoute.get("/all", async (req, res) => {
                 },
             },
         })
-        .then((dta) => {
-            return res.json(dta)
+        .then((data) => {
+            data.forEach(elm=>{
+                excludePass(elm?.Author,['password'])
+            })
+            return res.json(data)
         })
         .catch((e) => {
             return res.json({ err: "خطا" })
@@ -102,8 +106,8 @@ requestsRoute.get("/my-req", authorizeMiddleware, async (req, res) => {
                 },
             },
         })
-        .then((dta) => {
-            return res.json(dta.freeRequests)
+        .then((data) => {
+            return res.json(data.freeRequests)
         })
         .catch((e) => {
             return res.json({ msg: e })
@@ -159,8 +163,9 @@ requestsRoute.get("/single", async (req, res) => {
                 categorie: true,
             },
         })
-        .then((dta) => {
-            return res.json(dta)
+        .then((data) => {
+            excludePass(data?.Author,['password'])
+            return res.json(data)
         })
         .catch(() => {
             return res.json({ err: "درخواست مورد نظر موجود نیست" })

@@ -4,6 +4,7 @@ import helmet from "helmet"
 import http from "http"
 import cluster from "cluster"
 import os from "os"
+import compression from 'compression'
 
 
 // * modules-Import
@@ -13,6 +14,9 @@ import { superAdminRoute } from "./routes/superadmin.routes.js"
 import bodyParser from "body-parser"
 import { customCors } from "./middlewares/customCORS.js"
 
+if (process.env.NODE_ENV === "prod") {
+  console.log = function () {};
+}
 
 // cluster config
 const totalCPUs = os.cpus().length
@@ -33,12 +37,6 @@ if (cluster.isMaster) {
     });
 } else {
 
-    // const corsOptions = {
-    //     origin: 'https://behnid.com',
-    //     methods: ['POST', 'GET', 'PATCH', 'DELETE', 'OPTIONS'],
-    //     allowedHeaders: ['Content-Type', 'Authorization']
-    // }
-
     // ? Inintials
     const app = express()
     const port = process.env.PORT || 3001
@@ -47,8 +45,7 @@ if (cluster.isMaster) {
     // ? middlewares
     app.use(express.json())
     app.use(helmet({ crossOriginResourcePolicy: false }))
-    // app.options('*', cors());
-    // app.use(cors(corsOptions)) 
+    app.use(compression())
     app.use(bodyParser.urlencoded({ extended: false }))
     app.set("view engine", "ejs")
     app.use(customCors);
@@ -60,6 +57,7 @@ if (cluster.isMaster) {
 
     // ? statics
     app.use("/uploads",express.static("uploads"))
+    
 
 
     httpServer.listen(port, () => {

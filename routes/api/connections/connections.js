@@ -98,8 +98,22 @@ connectionsRoute.get("/get-info", authorizeMiddleware, async (req, res) => {
                 AuthorId: Number(id),
             },
             include: {
-                follower: true,
-                following: true,
+                follower: {
+                    select : {
+                        id : true,
+                        name : true,
+                        avatar : true,
+                        password : false,
+                    }
+                },
+                following: {
+                    select : {
+                        id : true,
+                        name : true,
+                        avatar : true,
+                        password : false,
+                    }
+                },
             },
         })
         .then((data) => {
