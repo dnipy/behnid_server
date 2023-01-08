@@ -6,6 +6,15 @@ import { excludePass } from "../../../funcs/ExcludePass.js"
 const profileRoute = express.Router()
 const prisma = new PrismaClient()
 
+
+
+
+// ! ////////////////////////////////////////////////////////
+// !            ADD_STORY                                  /
+// ! //////////////////////////////////////////////////////
+
+
+
 profileRoute.get("/", (req, res) => {
     res.send("/api/profile")
 })

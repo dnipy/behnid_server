@@ -199,6 +199,7 @@ model Product {
 
 model stories {
   id              Int     @id @default(autoincrement())
+  date            DateTime    @default(now())
   authorID        Int
   authorName      String
   author          User    @relation(fields: [authorID,authorName],references: [id,name])

@@ -2,6 +2,7 @@ import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
 import { excludePass } from "../../../funcs/ExcludePass.js"
+import { lastDay } from '../../../funcs/last-24-h.js'
 config()
 
 const usersRoute = express.Router()
@@ -40,7 +41,18 @@ usersRoute.get("/single", async (req, res) => {
     const intUserId = parseInt(userID)
     await prisma.user.findFirst({
         where: {
-            id: intUserId,
+            AND : [
+                { id: intUserId },
+                {
+                    stories : {
+                        some : {
+                            date : {
+                                gte : new Date(lastDay).toISOString(),
+                            }
+                        }
+                    }
+                }
+            ]
         },
     }).then(data=>{
         excludePass(data,['password'])
