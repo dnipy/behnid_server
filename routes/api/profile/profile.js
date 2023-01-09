@@ -2,6 +2,7 @@ import express from "express"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { PrismaClient } from "@prisma/client"
 import { excludePass } from "../../../funcs/ExcludePass.js"
+import { lastDay } from "../../../funcs/last-24-h.js"
 
 const profileRoute = express.Router()
 const prisma = new PrismaClient()
@@ -34,6 +35,13 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
                 products: true,
                 tickets: true,
                 sellerProfile: true,
+                stories : {
+                    where : {
+                        date : {
+                            gte : new Date(lastDay).toISOString()
+                        }
+                    }
+                }
             },
         })
         .then((data) => {
@@ -81,6 +89,7 @@ profileRoute.post("/update", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "ارور در فیلد های ارسال شده" })
         })
 })
+
 
 profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData

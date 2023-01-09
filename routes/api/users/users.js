@@ -41,19 +41,18 @@ usersRoute.get("/single", async (req, res) => {
     const intUserId = parseInt(userID)
     await prisma.user.findFirst({
         where: {
-            AND : [
-                { id: intUserId },
-                {
-                    stories : {
-                        some : {
-                            date : {
-                                gte : new Date(lastDay).toISOString(),
-                            }
-                        }
+                 id: intUserId ,
+        },
+        include : {
+            stories : {
+                where : {
+                    date : {
+                        gte : new Date(lastDay).toISOString(),
+
                     }
                 }
-            ]
-        },
+            }
+        }
     }).then(data=>{
         excludePass(data,['password'])
         return res.json(data)

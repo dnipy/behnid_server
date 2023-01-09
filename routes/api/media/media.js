@@ -218,6 +218,42 @@ mediaRoute.post(
     }
 )
 
+
+mediaRoute.post(
+    "/photo/story",
+    authorizeMiddleware,
+    uploads.single("story_image"),
+    async (req, res) => {
+        if (!req.file?.path) return res.json({ err: "need file !" })
+        console.log(req.file?.path)
+        console.log(req.userData.userPhone)
+
+        await prisma.user
+            .update({
+                where: {
+                    phone: req.userData.userPhone,
+                },
+                data: {
+                    stories : {
+                        create : {
+                            imgSrc : "/" + req.file.path,
+                        }
+                    }
+                },
+            })
+            .then(() => {
+                return res
+                    .status(200)
+                    .json({ msg: "تغییرات با موفقیت اعمال شد", error: 0 })
+            })
+            .catch(() => {
+                return res
+                    .status(500)
+                    .json({ msg: "اطلاعات وارد شده نامعتبر است", error: 1 })
+            })
+    }
+)
+
 mediaRoute.delete("/avatar/delete", authorizeMiddleware, async (req, res) => {
     await prisma.user
         .update({
