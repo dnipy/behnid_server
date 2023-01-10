@@ -271,14 +271,16 @@ AuthRoute.post("/profile-setup", authorizeMiddleware, async (req, res) => {
     if (!email) return res.json({ err: "ایمیل لازم است" })
     if (!name) return res.json({ err: "نام لازم است" })
 
+    if (password?.length < 8)
+        return res.status(400).json({ err: "رمز وارد شده باید بالای 8 رقم باشد" })
     try {
         await prisma.user
             .update({
                 where: { phone: phone },
                 data: {
                     password,
-                    email,
-                    name,
+                    email : `${email}`.toLowerCase(),
+                    name : `${name}`.toLowerCase(),
                 },
             })
             .then(async () => {

@@ -9,13 +9,6 @@ const prisma = new PrismaClient()
 
 
 
-
-// ! ////////////////////////////////////////////////////////
-// !            ADD_STORY                                  /
-// ! //////////////////////////////////////////////////////
-
-
-
 profileRoute.get("/", (req, res) => {
     res.send("/api/profile")
 })
@@ -93,7 +86,7 @@ profileRoute.post("/update", authorizeMiddleware, async (req, res) => {
 
 profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
-    const { name, bio, email, phone } = req.body
+    const { name, bio, email } = req.body
 
     await prisma.user
         .update({
@@ -102,7 +95,6 @@ profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
                 name,
                 bio,
                 email,
-                phone,
             },
         })
         .then(() => {
