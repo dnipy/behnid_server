@@ -75,8 +75,9 @@ model User {
   following                      Connections[]             @relation("follower")
   stories                        stories[]
 
-  
-
+  ActivityCategory               Category?                 @relation(references: [name,id],fields: [CategoryName,CategoryId])
+  CategoryName                   String?
+  CategoryId                     Int?
   
   @@unique([id, name])
   @@unique([phone, email])
@@ -130,8 +131,9 @@ model sellerProfile {
 
 model Ticket {
     id              Int           @id @default(autoincrement())
-    user            User        @relation(fields: [userID],references: [id])
-    userID          Int         
+    user            User        @relation(fields: [userID],references: [id],onDelete: Cascade)
+    userID          Int        
+    title           String      @default("") 
     message         String
     status          TicketStatus
     response        String      @default("")
@@ -265,6 +267,7 @@ model Category {
   name  String @unique
   products Product[] @relation()
   requests  FreeRequests[] @relation()
+  users     User[]          @relation()
   @@unique([id,name])
 }
 
