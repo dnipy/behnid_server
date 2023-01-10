@@ -266,6 +266,7 @@ AuthRoute.get("/check-access-token", authorizeMiddleware, async (req, res) => {
 
 AuthRoute.post("/profile-setup", authorizeMiddleware, async (req, res) => {
     const phone = req.userData?.userPhone
+    console.log(phone)
     const { password, email, name } = req.body
 
     if (!password) return res.json({ err: "پسورد لازم است" })
@@ -274,17 +275,28 @@ AuthRoute.post("/profile-setup", authorizeMiddleware, async (req, res) => {
 
     if (password?.length < 8)
         return res.status(400).json({ err: "رمز وارد شده باید بالای 8 رقم باشد" })
+
+    const lowerName = `${name}`
+    const lowerEmail = `${email}`
+
+    const LName = lowerName.toLowerCase()
+    const LEmail = lowerEmail.toLowerCase()
+    console.log({
+        LName,
+        LEmail
+    })
     try {
         await prisma.user
             .update({
                 where: { phone: phone },
                 data: {
                     password,
-                    email : `${email}`.toLowerCase(),
-                    name : `${name}`.toLowerCase(),
+                    email : LEmail,
+                    name : LName,
                 },
             })
             .then(async () => {
+                console.log('doneeee')
                 await prisma.connections.create({
                     data: {
                         author: {
