@@ -5,6 +5,7 @@ import { VerifyNumber } from "../../../funcs/VerifyPhone.js"
 import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
+import { makeid } from "../../../funcs/PassGen.js"
 config()
 
 const prisma = new PrismaClient()
@@ -336,5 +337,41 @@ AuthRoute.post("/profile-setup-two", authorizeMiddleware, async (req, res) => {
         return res.status(500)
     }
 })
+
+
+
+AuthRoute.post("/reset-password", async (req, res) => {
+    const { phone } = req.body
+    console.log(phone)
+
+    if (phone?.length != 11 )
+        return res.json({ err: "شماره تلفن اشتباه است" })
+    
+
+    const user = await prisma.user.findFirst({ where: { phone: phone } })
+    if (!user) return res.json({err : "یوزری یافت نشد"})
+
+
+    const PassGen = makeid(8)
+
+    try {
+        await prisma.user.update({
+            where : {
+                phone
+            },
+            data : {
+                password : PassGen
+            }
+        }).then(()=>{
+            VerifyNumber(phone,PassGen)
+            return res.json({msg : 'موفق'})
+        }).catch(()=>{
+            return res.json({err : "یوزر پیدا نشد   "})
+        })
+    } catch {
+        return res.json({ err: "ارور از سرور" })
+    }
+})
+
 
 export { AuthRoute }

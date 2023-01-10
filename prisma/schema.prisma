@@ -196,6 +196,7 @@ model Product {
   freeDelivery    Boolean               @default(false)
   force           Boolean               @default(false)
   isShown         Boolean               @default(true)
+  productStatus   ProductStatus         @default(pending)
 }
 
 
@@ -436,6 +437,12 @@ enum SellerStatus {
   rejected
   accepted
   unAuthorized
+}
+
+enum ProductStatus {
+  pending
+  rejected
+  accepted
 }
 
 enum superUserRole {

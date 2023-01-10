@@ -33,7 +33,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
     })
 
     try {
-        if (user.Role === "Seller") {
+        if (user.Role === "Seller" || user.Role === "Buyer") {
             await prisma.user
                 .update({
                     where: {

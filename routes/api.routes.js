@@ -19,6 +19,7 @@ import { ticketsRoute } from "./api/tickets/tickets.js"
 import { chatRoute } from "./api/chat/chat.js"
 import { NotificationsRoute } from "./api/notifications/notifications.js"
 import { uploadImage } from "../middlewares/base64.js"
+import { makeid } from "../funcs/PassGen.js"
 
 //initial router
 const apiRoute = express.Router()
@@ -43,7 +44,8 @@ apiRoute.use("/chats", chatRoute)
 apiRoute.post("/base64", uploadImage)
 
 apiRoute.get("/", (req, res) => {
-    res.send("/api/")
+    const genCode = makeid(8)
+    res.send(genCode)
 })
 
 export { apiRoute }
