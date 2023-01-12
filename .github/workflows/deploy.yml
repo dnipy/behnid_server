@@ -1,5 +1,5 @@
 lines (24 sloc) 646 Bytes
-name: BuildExpressApp
+name: deploy
 on:
   push:
     branches: [main]
