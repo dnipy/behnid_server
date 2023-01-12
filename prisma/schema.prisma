@@ -79,6 +79,7 @@ model User {
   CategoryName                   String?
   CategoryId                     Int?
   
+  
   @@unique([id, name])
   @@unique([phone, email])
 }
@@ -192,7 +193,7 @@ model Product {
   categorie       Category[]            @relation()
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
-  city            City?                 @relation(references: [name],fields: [cityName],onDelete: Cascade)
+  city            City?                 @relation(references: [id],fields: [id],onDelete: Cascade)
   freeDelivery    Boolean               @default(false)
   force           Boolean               @default(false)
   isShown         Boolean               @default(true)
@@ -213,7 +214,6 @@ model stories {
 
 
 //add reply for comments
-
 model commentsForProducts {
   id                Int                             @id @default(autoincrement())
   productID         Int?
@@ -241,23 +241,23 @@ model commentsForProductsComments {
 
 model City {
   id    Int    @id @default(autoincrement())
-  name  String  @unique
+  name  String
   provienceId   Int
-  provienceName   String
+  // provienceName   String
+  slug            String?
   products Product[] @relation()
   requests  FreeRequests[] @relation()
-  provience   Provience   @relation(references: [id,name],fields: [provienceId,provienceName])
+  provience   Provience   @relation(references: [id],fields: [provienceId])
   users   User[]
   sellers sellerProfile[]
-
   @@unique([id, name])
-  
 }
 
 
 model Provience {
   id    Int    @id @default(autoincrement())
   name  String  
+  slug  String?
   cities  City[]
   @@unique([name,id])
   @@unique([id, name])
@@ -328,18 +328,28 @@ model FreeRequests {
 
 //blog part///////////////
 model Blog {
-  id        Int         @id @default(autoincrement())
+  id        Int                  @id @default(autoincrement())
   title     String
   describe  String
   imgsrc    String?
-  date      DateTime      @default(now())
-  likes     Int       @default(0)
-  seenTime  Int @default(0)
+  date      DateTime             @default(now())
+  likes     Int                  @default(0)
+  seenTime  Int                  @default(0)
   comments  commentsForBlog[]
   authorId  Int?
-  author    SuperUser   @relation(fields: [id],references: [id],onDelete: Cascade)
+  author    SuperUser            @relation(fields: [id],references: [id],onDelete: Cascade)
+  keywords  keywordForBlog[]     @relation()
+  category  CategoryForBlog[]    @relation() 
 }
 
+
+
+model CategoryForBlog {
+  id                Int             @id @default(autoincrement())
+  name              String          @unique
+  blog              Blog[]
+  @@unique([id,name])
+}
 
 model commentsForBlog {
   id  Int  @id @default(autoincrement())
@@ -351,6 +361,15 @@ model commentsForBlog {
   message   String  @default("")
   date      DateTime    @default(now())
 }
+
+
+
+model keywordForBlog {
+  id       Int  @id @default(autoincrement())
+  name     String
+  blog     Blog[]
+}
+
 
 model commentsForBlogComments {
   id  Int  @id @default(autoincrement())

@@ -28,17 +28,14 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
 
     console.log(req.body)
 
-    const user = await prisma.user.findFirst({
+    const usr = await prisma.user.findFirst({
         where: { phone: req.userData.userPhone },
     })
+    
 
     try {
-        if (user.Role === "Seller" || user.Role === "Buyer") {
-            await prisma.user
-                .update({
-                    where: {
-                        phone: req.userData.userPhone,
-                    },
+        if (usr.Role === "Seller" || usr.Role === "Buyer") {
+            await prisma.user.update({
                     data: {
                         products: {
                             create: {
@@ -52,22 +49,26 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                                 producerPrice: producerPrice,
                                 weight,
                                 sendArea,
+
                                 categorie : {
                                     connect : {
-                                        name : catName
+                                        name : catName,
                                     } 
                                 },
                                 city : {
                                     connect : {
-                                        name : City
+                                        id : City
                                     }
-                                }
+                                },
                                 
                             },
                         },
                     },
                     include: {
                         products: true,
+                    },
+                    where : {
+                        phone : usr.phone
                     },
                 })
                 .then((data) => {

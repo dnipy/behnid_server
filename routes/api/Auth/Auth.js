@@ -127,6 +127,7 @@ AuthRoute.post("/forgot-password", async (req, res) => {
     }
 })
 
+
 AuthRoute.post("/forgot-confirm", async (req, res) => {
     const { phone, code, newPassword } = req.body
 
@@ -383,6 +384,10 @@ AuthRoute.post("/reset-password", async (req, res) => {
     } catch {
         return res.json({ err: "ارور از سرور" })
     }
+})
+
+AuthRoute.get("/logout",async(req,res)=>{
+    return res.clearCookie('jwt').json({msg : 'موفق'})
 })
 
 

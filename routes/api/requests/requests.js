@@ -32,7 +32,7 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                         imgsrc: "",
                         city : {
                             connect : {
-                                name : City
+                                id : Number(City)
                             }
                         },
                     },

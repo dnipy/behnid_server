@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
 import { excludePass } from "../../../funcs/ExcludePass.js"
 import { lastDay } from '../../../funcs/last-24-h.js'
+// import ProvienceJSON from "../../../static/proviences.json" assert {type: 'json'};
+// import CityJSON from "../../../static/cities.json" assert {type: 'json'};
 config()
 
 const usersRoute = express.Router()
@@ -81,5 +83,28 @@ usersRoute.delete("/delete", async (req, res) => {
             return res.send("کاربری با مشخصات زیر موجود نیست")
         })
 })
+
+// usersRoute.get('/add-prov',async(req,res)=>{
+//     await prisma.provience.createMany({
+//         data : ProvienceJSON
+//     }).then(resp=>{
+//         return res.json({resp})
+//     }).catch((err)=>{
+//         return res.json({err})    
+//     }) 
+// })
+
+
+// usersRoute.get('/add-city',async(req,res)=>{
+//     await prisma.city.createMany({
+//         data : CityJSON,
+//     }).then(resp=>{
+//         return res.json({resp})
+//     }).catch((err)=>{
+//         return res.json({err})    
+//     }) 
+// })
+
+
 
 export { usersRoute }
