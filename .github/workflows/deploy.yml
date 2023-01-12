@@ -1,4 +1,3 @@
-lines (24 sloc) 646 Bytes
 name: deploy
 on:
   push:
