@@ -25,7 +25,7 @@ jobs:
         run: yarn install
 
       - name: chmod bash script
-        run: chmod +x ./pm2_runner.sh
+        run: chmod +x ./scripts/pm2_runner.sh
 
 
       - name: run bash script
