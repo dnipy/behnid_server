@@ -1,0 +1,31 @@
+lines (24 sloc) 646 Bytes
+name: BuildExpressApp
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    name: Build and deploy for new release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup-node 
+        uses: actions/setup-node@v3
+        
+        with:
+          node-version: 14.x
+          cache: npm
+        
+      - name: pull main
+        run: git pull origin main
+         
+      - name: yarn install
+        run: yarn install
+
+      - name: deploy
+        run: yarn run deploy
+
+          
