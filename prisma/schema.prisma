@@ -109,8 +109,8 @@ model sellerProfile {
   userID           Int                @unique
   verified         Boolean            @default(false)
   shopIntro        String
-  cityID           Int?
-  city             City?              @relation(fields: [cityID] , references: [id])
+  // cityID           Int?
+  // city             City?              @relation(fields: [cityID] , references: [id])
   sellerStatus     SellerStatus       @default(unAuthorized)
   sellerType       sellerType         @default(person)
 
@@ -126,9 +126,8 @@ model sellerProfile {
   company_3         String?
   company_4         String?
 
-  ActivityCategory               Category?                 @relation(references: [name,id],fields: [CategoryName,CategoryId])
-  CategoryName                   String?
-  CategoryId                     Int?
+  ActivityCategory               Category[]              @relation()
+  responseToCities               City[]                  @relation()              
 }
 
 
