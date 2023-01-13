@@ -75,9 +75,7 @@ model User {
   following                      Connections[]             @relation("follower")
   stories                        stories[]
 
-  ActivityCategory               Category?                 @relation(references: [name,id],fields: [CategoryName,CategoryId])
-  CategoryName                   String?
-  CategoryId                     Int?
+
   
   
   @@unique([id, name])
@@ -127,11 +125,15 @@ model sellerProfile {
   company_2         String?
   company_3         String?
   company_4         String?
+
+  ActivityCategory               Category?                 @relation(references: [name,id],fields: [CategoryName,CategoryId])
+  CategoryName                   String?
+  CategoryId                     Int?
 }
 
 
 model Ticket {
-    id              Int           @id @default(autoincrement())
+    id              Int         @id @default(autoincrement())
     user            User        @relation(fields: [userID],references: [id],onDelete: Cascade)
     userID          Int        
     title           String      @default("") 
@@ -272,9 +274,9 @@ model MainCategory {
 }
 
 model SubCategory {
-  id            Int    @id @default(autoincrement())
-  name          String @unique
-  categories    Category[]  @relation()
+  id                 Int    @id @default(autoincrement())
+  name               String @unique
+  categories         Category[]  @relation()
   mainCategory       MainCategory     @relation(fields: [mainCatName,mainCatId],references: [name,id],onDelete: Cascade)
   mainCatName        String          @default("")          
   mainCatId          Int             @default(1)
@@ -282,14 +284,14 @@ model SubCategory {
 }
 
 model Category {
-  id                Int             @id @default(autoincrement())
-  name              String          @unique
-  products          Product[]       @relation()
-  requests          FreeRequests[]  @relation()
-  users             User[]          @relation()
-  subCategory       SubCategory     @relation(fields: [subCatName,subCatId],references: [name,id],onDelete: Cascade)
-  subCatName        String          @default("")          
-  subCatId          Int             @default(1)
+  id                Int                      @id @default(autoincrement())
+  name              String                   @unique
+  products          Product[]                @relation()
+  requests          FreeRequests[]           @relation()
+  users             sellerProfile[]          @relation()
+  subCategory       SubCategory              @relation(fields: [subCatName,subCatId],references: [name,id],onDelete: Cascade)
+  subCatName        String                   @default("")          
+  subCatId          Int                      @default(1)
   @@unique([id,name])
 }
 

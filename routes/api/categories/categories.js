@@ -65,8 +65,44 @@ categoriesRoute.get("/all", async (req, res) => {
         })
 })
 
+
+categoriesRoute.get("/all-sub", async (req, res) => {
+    await prisma.subCategory
+        .findMany({})
+        .then((data) => {
+            return res.json(data)
+        })
+        .catch(() => {
+            return res.json({ err: "خطا" })
+        })
+})
+
+
+categoriesRoute.get("/all-main", async (req, res) => {
+    await prisma.mainCategory
+        .findMany({})
+        .then((data) => {
+            return res.json(data)
+        })
+        .catch(() => {
+            return res.json({ err: "خطا" })
+        })
+})
+
 categoriesRoute.get("/all-city", async (req, res) => {
     await prisma.city
+        .findMany({})
+        .then((data) => {
+            return res.json(data)
+        })
+        .catch(() => {
+            return res.json({ err: "خطا" })
+        })
+})
+
+
+categoriesRoute.get("/all-proviences", async (req, res) => {
+    await prisma.provience
         .findMany({})
         .then((data) => {
             return res.json(data)

@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
 import { excludePass } from "../../../funcs/ExcludePass.js"
 import { lastDay } from '../../../funcs/last-24-h.js'
-// import ProvienceJSON from "../../../static/proviences.json" assert {type: 'json'};
-// import CityJSON from "../../../static/cities.json" assert {type: 'json'};
+import { Categories , Cities , MainCategories , SubCategories , proviences  } from "../../../static/_index.js"
+
 config()
 
 const usersRoute = express.Router()
@@ -84,26 +84,61 @@ usersRoute.delete("/delete", async (req, res) => {
         })
 })
 
-// usersRoute.get('/add-prov',async(req,res)=>{
-//     await prisma.provience.createMany({
-//         data : ProvienceJSON
-//     }).then(resp=>{
-//         return res.json({resp})
-//     }).catch((err)=>{
-//         return res.json({err})    
-//     }) 
-// })
+usersRoute.get('/add-prov',async(req,res)=>{
+    await prisma.provience.createMany({
+        data : proviences
+    }).then(resp=>{
+        return res.json({resp})
+    }).catch((err)=>{
+        return res.json({err})    
+    }) 
+})
 
 
-// usersRoute.get('/add-city',async(req,res)=>{
-//     await prisma.city.createMany({
-//         data : CityJSON,
-//     }).then(resp=>{
-//         return res.json({resp})
-//     }).catch((err)=>{
-//         return res.json({err})    
-//     }) 
-// })
+usersRoute.get('/add-city',async(req,res)=>{
+    await prisma.city.createMany({
+        data : Cities,
+    }).then(resp=>{
+        return res.json({resp})
+    }).catch((err)=>{
+        return res.json({err})    
+    }) 
+})
+
+
+usersRoute.get('/add-main-cat',async(req,res)=>{
+    await prisma.mainCategory.createMany({
+        data : MainCategories,
+    }).then(resp=>{
+        return res.json({resp})
+    }).catch((err)=>{
+        return res.json({err})    
+    }) 
+})
+
+
+usersRoute.get('/add-sub-cat',async(req,res)=>{
+    await prisma.subCategory.createMany({
+        data : SubCategories,
+    }).then(resp=>{
+        return res.json({resp})
+    }).catch((err)=>{
+        return res.json({err})    
+    }) 
+})
+
+
+
+usersRoute.get('/add-down-cat',async(req,res)=>{
+    await prisma.category.createMany({
+        data : Categories,
+    }).then(resp=>{
+        return res.json({resp})
+    }).catch((err)=>{
+        return res.json({err})    
+    }) 
+})
+
 
 
 

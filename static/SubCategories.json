@@ -1,0 +1,194 @@
+[
+    {
+        "id": 1,
+        "name": "نوشیدنی",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 2,
+        "name": "کالای اساسی",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 3,
+        "name": "لبنیات",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 4,
+        "name": "کنسرو و غذای آماده",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 5,
+        "name": "چاشنی",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 6,
+        "name": "تنقلات",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 7,
+        "name": "آجیل و شیرینی",
+        "mainCatName": "مواد غذایی",
+        "mainCatId": 1
+    },
+    {
+        "id": 8,
+        "name": "میوه",
+        "mainCatName": "کشاورزی",
+        "mainCatId": 2
+    },
+    {
+        "id": 9,
+        "name": "خشکبار",
+        "mainCatName": "کشاورزی",
+        "mainCatId": 2
+    },
+    {
+        "id": 10,
+        "name": "حبوبات",
+        "mainCatName": "کشاورزی",
+        "mainCatId": 2
+    },
+    {
+        "id": 11,
+        "name": "صیفی جات",
+        "mainCatName": "کشاورزی",
+        "mainCatId": 2
+    },
+    {
+        "id": 12,
+        "name": "بهداشت محیط",
+        "mainCatName": "شستشو و نظافت",
+        "mainCatId": 8
+    },
+    {
+        "id": 13,
+        "name": "شستشوی لباس",
+        "mainCatName": "شستشو و نظافت",
+        "mainCatId": 8
+    },
+    {
+        "id": 14,
+        "name": "شستشوی ظرف",
+        "mainCatName": "شستشو و نظافت",
+        "mainCatId": 8
+    },
+    {
+        "id": 15,
+        "name": "بهداشت و مراقبت بدن",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 16,
+        "name": "بهداشت کودک",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 17,
+        "name": "بهداشت بانوان ",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 18,
+        "name": "دستمال",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 19,
+        "name": "اصلاح مو",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 20,
+        "name": "آرایشی",
+        "mainCatName": "آرایشی و بهداشتی",
+        "mainCatId": 4
+    },
+    {
+        "id": 21,
+        "name": "منزل",
+        "mainCatName": "خانه و آشپزخانه",
+        "mainCatId": 3
+    },
+    {
+        "id": 22,
+        "name": "آشپزخانه",
+        "mainCatName": "خانه و آشپزخانه",
+        "mainCatId": 3
+    },
+    {
+        "id": 23,
+        "name": "ملزومات شخصی",
+        "mainCatName": "خانه و آشپزخانه",
+        "mainCatId": 3
+    },
+    {
+        "id": 24,
+        "name": "ابزار آلات",
+        "mainCatName": "ابزار- برق و متفرقه",
+        "mainCatId": 5
+    },
+    {
+        "id": 25,
+        "name": "برق و روشنایی",
+        "mainCatName": "ابزار- برق و متفرقه",
+        "mainCatId": 5
+    },
+    {
+        "id": 26,
+        "name": "رژیمی",
+        "mainCatName": "محصولات سلامت محور",
+        "mainCatId": 7
+    },
+    {
+        "id": 27,
+        "name": "فاقد گلوتن",
+        "mainCatName": "محصولات سلامت محور",
+        "mainCatId": 7
+    },
+    {
+        "id": 28,
+        "name": "ارگانیک",
+        "mainCatName": "محصولات سلامت محور",
+        "mainCatId": 7
+    },
+    {
+        "id": 29,
+        "name": "گیاه خواری",
+        "mainCatName": "محصولات سلامت محور",
+        "mainCatId": 7
+    },
+    {
+        "id": 30,
+        "name": "لوازم تحریر",
+        "mainCatName": "لوازم تحریر و اداری",
+        "mainCatId": 6
+    },
+    {
+        "id": 31,
+        "name": "ملزومات اداری",
+        "mainCatName": "لوازم تحریر و اداری",
+        "mainCatId": 6
+    },
+    {
+        "id": 40,
+        "name": "متفرقه",
+        "mainCatName": "متفرقه",
+        "mainCatId": 9
+    }
+]

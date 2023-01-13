@@ -231,6 +231,111 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
 
 
 
+productsRoute.get("/mine/rejected", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "need both start and length query-params!" })
+
+    const IntLenght = parseInt(length)
+
+    try {
+        await prisma.product
+            .findMany({
+                where: {
+                    author: {
+                        phone: req.userData.userPhone,
+                    },
+                    productStatus : "rejected"
+                },
+                skip: parseInt(start) - 1,
+                take: parseInt(length),
+                include: { author: true },
+            })
+            .then((data) => {
+                data.forEach(elm=>{
+                    excludePass(elm?.author,['password'])
+                })
+                return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: e })
+            })
+    } catch (err) {
+        return res.json({ err: "ارور" })
+    }
+})
+
+
+productsRoute.get("/mine/pending", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "need both start and length query-params!" })
+
+    const IntLenght = parseInt(length)
+
+    try {
+        await prisma.product
+            .findMany({
+                where: {
+                    author: {
+                        phone: req.userData.userPhone,
+                    },
+                    productStatus : "pending"
+                },
+                skip: parseInt(start) - 1,
+                take: parseInt(length),
+                include: { author: true },
+            })
+            .then((data) => {
+                data.forEach(elm=>{
+                    excludePass(elm?.author,['password'])
+                })
+                return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: e })
+            })
+    } catch (err) {
+        return res.json({ err: "ارور" })
+    }
+})
+
+
+productsRoute.get("/mine/accepted", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "need both start and length query-params!" })
+
+    const IntLenght = parseInt(length)
+
+    try {
+        await prisma.product
+            .findMany({
+                where: {
+                    author: {
+                        phone: req.userData.userPhone,
+                    },
+                    productStatus : "accepted"
+                },
+                skip: parseInt(start) - 1,
+                take: parseInt(length),
+                include: { author: true },
+            })
+            .then((data) => {
+                data.forEach(elm=>{
+                    excludePass(elm?.author,['password'])
+                })
+                return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: e })
+            })
+    } catch (err) {
+        return res.json({ err: "ارور" })
+    }
+})
+
+
 
 productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
     const {id} = req.query
@@ -256,8 +361,11 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
                 }
             })
             .then((data) => {
+
+                data.requests.forEach(elm=>{
+                    excludePass(elm.RequestAuthor,['password'])
+                })
                 
-                excludePass(data.addDate,['password'])
                 
                 return res.json(data)
             })

@@ -14,7 +14,7 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
     const { name, catName, describe, City } = req.body
     console.log(req.body)
 
-    prisma.user
+    await prisma.user
         .update({
             where: {
                 phone: req.userData.userPhone,
@@ -47,6 +47,8 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
         })
 })
 
+
+
 requestsRoute.get("/all", async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
@@ -56,6 +58,52 @@ requestsRoute.get("/all", async (req, res) => {
         .findMany({
             where : {
                 isShown : true
+            },
+            skip: parseInt(start) - 1,
+            take: parseInt(length),
+            include: {
+                Author: true,
+                categorie: {
+                    distinct: ["name"],
+                },
+                city: {
+                    select: {
+                        name: true,
+                        id: true,
+                    },
+                },
+            },
+        })
+        .then((data) => {
+            data.forEach(elm=>{
+                excludePass(elm?.Author,['password'])
+            })
+            return res.json(data)
+        })
+        .catch((e) => {
+            return res.json({ err: "خطا" })
+        })
+})
+
+
+requestsRoute.get("/all-on-my-catgory", authorizeMiddleware ,async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ err: "need both start and length query-params!" })
+
+    const me = await prisma.user.findUnique({
+        where: {
+            phone: req.userData.userPhone,
+        },
+    }).catch((err)=>{
+        return res.json({err})
+    })
+
+    await prisma.freeRequests
+        .findMany({
+            where : {
+                isShown : true,
+                
             },
             skip: parseInt(start) - 1,
             take: parseInt(length),
