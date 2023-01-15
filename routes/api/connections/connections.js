@@ -175,7 +175,7 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
                 return res.json({ msg: "موفق" })
             })
             .catch(() => {
-                return res.json({ err: "خطا" })
+                return res.json({ err: "خطا3" })
             })
     } else {
         return res.json({ err: "no user found" })

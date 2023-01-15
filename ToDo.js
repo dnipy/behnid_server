@@ -2,6 +2,34 @@
 
 // * Backend
 
+
+// ! unfollow
+// ! add-seller-header
+// ! add-seller-comment
+// ! add-seller-reates
+// ! set-seller-activity-cat
+// ! set-seller-activity-city
+// ! add-user-city
+// ! server-timezone
+// ! audio & pdf msg 
+// ! like msg 
+// ! reply msg
+// ! send product to chat
+// ! send free-req to chat
+// ! free-req-(pending/rejected/accepted)
+// ! add name to ticket body
+// ! add-keyword (product/request)
+// ! add-shop-name
+
+
+
+
+
+
+
+
+
+
 // ? 1_ upload image for sellers                                            ###done###
 // ? 2_ add contacts && get contacts 80%                                    ###done###
 // ? 3_ update req && update product                                        ###done###
