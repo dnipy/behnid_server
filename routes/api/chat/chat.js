@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { uploads } from "../../../middlewares/upload.js"
 import { uploadAudio } from "../../../middlewares/voice_uploads.js"
+import { uploadPdf } from "../../../middlewares/pdf_upload.js"
 import { excludePass } from "../../../funcs/ExcludePass.js"
 
 let prisma = new PrismaClient()
@@ -275,13 +276,13 @@ chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
 // message routes
 
 chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
-    const { chatID, message, reciverID } = req.body
+    const { chatID, message, reciverID , replyedTo } = req.body
 
     if (!chatID || !message) return res.json({ error: 1 })
 
     console.log(req.body)
 
-    prisma.chats
+    await prisma.chats
         .update({
             where: {
                 id: Number(chatID),
@@ -300,6 +301,7 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
                             },
                         },
                         text: message,
+                        replyedTo : replyedTo ? replyedTo : ""
                     },
                 },
             },
@@ -319,6 +321,159 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "ارور در ساخت پیام" })
         })
 })
+
+
+
+
+chatRoute.post("/send-product", authorizeMiddleware, async (req, res) => {
+    const { chatID, productID , reciverID  } = req.body
+
+    if (!chatID || !productID , !reciverID ) return res.json({ error: "مقادیر وارد شده کافی نیست" })
+
+    console.log(req.body)
+
+    await prisma.chats
+        .update({
+            where: {
+                id: Number(chatID),
+            },
+            data: {
+                message: {
+                    create: {
+                        sender: {
+                            connect: {
+                                phone: req?.userData?.userPhone,
+                            },
+                        },
+                        reciever: {
+                            connect: {
+                                id: Number(reciverID),
+                            },
+                        },
+                        product : {
+                            connect : {
+                                id : Number(productID)
+                            }
+                        }
+                    },
+                },
+            },
+            include: {
+                message: true,
+                userOne : true,
+                userTwo : true,
+            },
+        })
+        .then((resp) => {
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
+            
+            return res.json(resp)
+        })
+        .catch((e) => {
+            return res.json({ err: "ارور در ساخت پیام" })
+        })
+})
+
+
+
+
+chatRoute.post("/send-free-request", authorizeMiddleware, async (req, res) => {
+    const { chatID, requestID , reciverID  } = req.body
+
+    if (!chatID || !requestID , !reciverID ) return res.json({ error: "مقادیر وارد شده کافی نیست" })
+
+    console.log(req.body)
+
+    await prisma.chats
+        .update({
+            where: {
+                id: Number(chatID),
+            },
+            data: {
+                message: {
+                    create: {
+                        sender: {
+                            connect: {
+                                phone: req?.userData?.userPhone,
+                            },
+                        },
+                        reciever: {
+                            connect: {
+                                id: Number(reciverID),
+                            },
+                        },
+                        request : {
+                            connect : {
+                                id : Number(requestID)
+                            }
+                        }
+                    },
+                },
+            },
+            include: {
+                message: true,
+                userOne : true,
+                userTwo : true,
+            },
+        })
+        .then((resp) => {
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
+            
+            return res.json(resp)
+        })
+        .catch((e) => {
+            return res.json({ err: "ارور در ساخت پیام" })
+        })
+})
+
+
+
+
+chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
+    const { chatID, messageID} = req.body
+
+    if (!chatID || !messageID) return res.json({ error: 1 })
+
+    console.log(req.body)
+
+    prisma.chats
+        .update({
+            where: {
+                id: Number(chatID),
+            },
+            data: {
+                message: {
+                    update : {
+                        where : {
+                            id : Number(messageID)
+                        },
+                        data : {
+                            liked : true
+                        }
+                    }
+                },
+            },
+            include: {
+                message: true,
+                userOne : true,
+                userTwo : true
+            },
+        })
+        .then((resp) => {
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
+            
+            return res.json(resp)
+        })
+        .catch((e) => {
+            return res.json({ err: "ارور در ساخت پیام" })
+        })
+})
+
+
+
 
 chatRoute.post(
     "/new-img-message",
@@ -415,6 +570,57 @@ chatRoute.post(
             })
     }
 )
+
+
+
+
+chatRoute.post(
+    "/new-pdf-message",
+    authorizeMiddleware,
+    uploadPdf.single("pdf_file"),
+    async (req, res) => {
+        const { chatID, reciverID } = req.query
+
+        if (!chatID) return res.json({ err: 1 })
+        if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
+
+        await prisma.chats
+            .update({
+                where: {
+                    id: Number(chatID),
+                },
+                data: {
+                    message: {
+                        create: {
+                            sender: {
+                                connect: {
+                                    phone: req?.userData?.userPhone,
+                                },
+                            },
+                            reciever: {
+                                connect: {
+                                    id: Number(reciverID),
+                                },
+                            },
+                            text: "",
+                            pdf : "/" + req?.file?.path,
+                        },
+                    },
+                },
+                include: {
+                    message: true,
+                },
+            })
+            .then((rsp) => {
+                return res.json(rsp)
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور در ساخت پیام", e })
+            })
+    }
+)
+
+
 
 
 chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {

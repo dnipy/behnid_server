@@ -55,7 +55,7 @@ model User {
   commentsOnProductsComments     commentsForProductsComments[]
   commentsOnBlogComments         commentsForBlogComments[]
   commentsOnSellersPages         commentsForSellers[]
-  retesForSellerPages            retesForSellers[]
+  retesForSellerPages            ratesForSellers[]
 
 
   //requests
@@ -133,7 +133,8 @@ model sellerProfile {
   responseToCities               City[]                  @relation()        
 
   site_header       String?     
-  rates             retesForSellers[]
+  phone_num_shown   Boolean                              @default(false)
+  rates             ratesForSellers[]
   comments          commentsForSellers[] 
 }
 
@@ -252,10 +253,10 @@ model commentsForSellers {
 }
 
 
-model retesForSellers {
+model ratesForSellers {
   id                Int                             @id @default(autoincrement())
-  AuthorID          Int?
-  ratesAuthor       User?                           @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
+  AuthorID          Int                             @unique
+  ratesAuthor       User                            @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
   rates             Rates                           @default(unset)
   seller            sellerProfile                   @relation(onDelete: Cascade,references: [id],fields: [sellerID])
   sellerID          Int

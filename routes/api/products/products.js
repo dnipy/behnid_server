@@ -100,6 +100,7 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
         weight,
         deliveryTime,
         catName,
+        keywords
     } = req.body
 
     console.log(req.body)
@@ -133,6 +134,11 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                                     categorie : {
                                         connect : {
                                             name : catName
+                                        }
+                                    },
+                                    keywords : {
+                                        createMany : {
+                                            data : keywords ? keywords : [{name : 'محصول-بهنید'}]
                                         }
                                     }
                                 },

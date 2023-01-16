@@ -105,6 +105,32 @@ profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
         })
 })
 
+
+profileRoute.post("/update-city", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const { cityID } = req.body
+
+    await prisma.user
+        .update({
+            where: { phone: userPhone },
+            data: {
+                city : {
+                    connect : {
+                        id : Number(cityID)
+                    }
+                }
+            },
+        })
+        .then(() => {
+            return res.json({ msg: "اپدیت با موفقیت انجام شد" })
+        })
+        .catch(() => {
+            return res.json({ err: "ارور در فیلد های ارسال شده" })
+        })
+})
+
+
+
 profileRoute.get("/my-role", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
     const user = await prisma.user
@@ -146,6 +172,12 @@ profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
             where: { phone: userPhone },
             data: {
                 Role: "Seller",
+                sellerProfile : {
+                    create : {
+                        shopName : user.name,
+                        shopIntro : ""
+                    }
+                }
             },
         })
         .then((dta) => {

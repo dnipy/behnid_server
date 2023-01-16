@@ -11,7 +11,7 @@ requestsRoute.get("/", (req, res) => {
 })
 
 requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
-    const { name, catName, describe, City } = req.body
+    const { name, catName, describe, City , keywords } = req.body
     console.log(req.body)
 
     await prisma.user
@@ -35,6 +35,11 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                                 id : Number(City)
                             }
                         },
+                        keywords : {
+                            createMany : {
+                                data : keywords ? keywords : [{name : 'درخواست-بهنید'}]
+                            }
+                        }
                     },
                 },
             },
@@ -161,6 +166,116 @@ requestsRoute.get("/my-req", authorizeMiddleware, async (req, res) => {
             return res.json({ msg: e })
         })
 })
+
+
+requestsRoute.get("/my-rejected-req", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "مقادیر شروع و مقدار وارد نشده است" })
+
+    const IntLength = parseInt(length)
+
+    await prisma.user
+        .findUnique({
+            where: {
+                phone: req.userData.userPhone,
+            },
+            select: {
+                freeRequests: {
+                    where : {
+                        status : "rejected"
+                    },
+                    select: {
+                        name: true,
+                        seenTime: true,
+                        describe: true,
+                        id: true,
+                    },
+                },
+            },
+        })
+        .then((data) => {
+            return res.json(data.freeRequests)
+        })
+        .catch((e) => {
+            return res.json({ msg: e })
+        })
+})
+
+
+
+requestsRoute.get("/my-pending-req", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "مقادیر شروع و مقدار وارد نشده است" })
+
+    const IntLength = parseInt(length)
+
+    await prisma.user
+        .findUnique({
+            where: {
+                phone: req.userData.userPhone,
+            },
+            select: {
+                freeRequests: {
+                    where : {
+                        status : "pending"
+                    },
+                    select: {
+                        name: true,
+                        seenTime: true,
+                        describe: true,
+                        id: true,
+                    },
+                },
+            },
+        })
+        .then((data) => {
+            return res.json(data.freeRequests)
+        })
+        .catch((e) => {
+            return res.json({ msg: e })
+        })
+})
+
+
+
+requestsRoute.get("/my-accepted-req", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ msg: "مقادیر شروع و مقدار وارد نشده است" })
+
+    const IntLength = parseInt(length)
+
+    await prisma.user
+        .findUnique({
+            where: {
+                phone: req.userData.userPhone,
+            },
+            select: {
+                freeRequests: {
+                    where : {
+                        status : "accepted"
+                    },
+                    select: {
+                        name: true,
+                        seenTime: true,
+                        describe: true,
+                        id: true,
+                    },
+                },
+            },
+        })
+        .then((data) => {
+            return res.json(data.freeRequests)
+        })
+        .catch((e) => {
+            return res.json({ msg: e })
+        })
+})
+
+
+
 
 requestsRoute.post("/edit", authorizeMiddleware, async (req, res) => {
     const { id } = req.query

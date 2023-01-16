@@ -13,7 +13,7 @@ ticketsRoute.get("/", (req, res) => {
 
 ticketsRoute.post("/add", authorizeMiddleware, async (req, res) => {
     const phone = req.userData.userPhone
-    const { message } = req.body
+    const { message , name } = req.body
 
     await prisma.user
         .update({
@@ -21,6 +21,7 @@ ticketsRoute.post("/add", authorizeMiddleware, async (req, res) => {
             data: {
                 tickets: {
                     create: {
+                        name : name ? name : "بدون سابجکت",
                         message: message,
                         status: "pending",
                     },

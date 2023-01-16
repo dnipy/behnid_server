@@ -141,7 +141,11 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
         .findUnique({ where: { id: Number(id) } })
         .catch(() => {
             return res.json({ err: "یوزر اشتباه" })
-        })
+    })
+
+
+    if (!user_one || !user_two) return res.json({err : "اشکال در اطلاعات یوزر"})
+
 
     if (user_two) {
         await prisma.connections
@@ -149,23 +153,24 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
                 where: {
                     AuthorId: user_two.id,
                 },
-                update: {
+                data: {  
                     follower: {
                         delete: {
-                            phone: userPhone,
+                            id : user_one.id
                         },
                     },
                 },
             })
             .then(async () => {
-                await prisma.user.update({
+                console.log('step two')
+                await prisma.connections.update({
                     where: {
                         AuthorId: user_one.id,
                     },
-                    update: {
+                    data: {
                         following: {
                             delete: {
-                                id: Number(id),
+                                id: user_two.id,
                             },
                         },
                     },
@@ -174,8 +179,8 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
             .then(() => {
                 return res.json({ msg: "موفق" })
             })
-            .catch(() => {
-                return res.json({ err: "خطا3" })
+            .catch((e) => {
+                return res.json({ err: "خطا3",e})
             })
     } else {
         return res.json({ err: "no user found" })
