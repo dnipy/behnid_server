@@ -6,6 +6,7 @@ import { PrismaClient } from "@prisma/client"
 import { config } from "dotenv"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { makeid } from "../../../funcs/PassGen.js"
+import bycript from "bcrypt"
 config()
 
 const prisma = new PrismaClient()
@@ -159,33 +160,10 @@ AuthRoute.post("/forgot-confirm", async (req, res) => {
     }
 })
 
-AuthRoute.post("/get-new-token", async (req, res) => {
-    const { phone, password } = req.body
-
-    if (phone?.length != 11) return res.status(400)
-    if (password?.length < 8) return res.status(400)
-
-    const user = await prisma.user.findFirst({
-        where: { phone: phone, password: password },
-    })
-    console.log(user)
-
-    if (user == null) return res.json({ err: "اطلاعات یوزر غلط " })
-
-    try {
-        const accessToken = jwt.sign(
-            { userPhone: phone },
-            process.env.ACCESS_TOKEN_SEC
-        )
-        return res.status(200).json({ accessToken })
-    } catch {
-        return res.status(500)
-    }
-})
 
 AuthRoute.post("/login", async (req, res) => {
     const { phone, password } = req.body
-    console.log({ phone, password })
+    console.log({ phone , password })
 
     if (phone?.length != 11)
         return res.status(400).json({ err: "شماره تلفن باید ۱۱ رقم باشد" })
@@ -194,8 +172,11 @@ AuthRoute.post("/login", async (req, res) => {
 
     await prisma.user
         .findFirst({ where: { phone: phone } })
-        .then((user) => {
-            if (password == user.password) {
+        .then(async(usr) => {
+
+            const compare = await bycript.compare(password, usr.password)
+
+            if (compare) {
                 const accessToken = jwt.sign(
                     { userPhone: phone },
                     process.env.ACCESS_TOKEN_SEC
@@ -207,7 +188,7 @@ AuthRoute.post("/login", async (req, res) => {
             }
         })
         .catch((error) => {
-            return res.status(500).json({ err: "یوزر پیدا نشد" })
+            return res.status(500).json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" })
         })
 })
 
@@ -222,14 +203,16 @@ AuthRoute.post("/change-password", authorizeMiddleware, async (req, res) => {
             .status(400)
             .json({ err: "رمز عبور  جدید باید بالای ۸ رقم باشد" })
 
-    const user = await prisma.user.findFirst({ where: { phone: phone } })
+    const usr = await prisma.user.findFirst({ where: { phone: phone } })
+    const compare = await bycript.compare(password, usr.password)
 
-    try {
-        if (password == user.password) {
-            await prisma.user
+        if (compare) {
+            bycript.hash(newPassword,9,async(e,hash)=>{
+
+                await prisma.user
                 .update({
                     where: { phone: phone },
-                    data: { password: newPassword },
+                    data: { password: hash },
                 })
                 .then(() => {
                     return res.json({ msg: "موفق" })
@@ -237,13 +220,13 @@ AuthRoute.post("/change-password", authorizeMiddleware, async (req, res) => {
                 .catch(() => {
                     return res.json({ err: "یوزر پیدا نشد" })
                 })
-        } else {
-            return res.json({ err: "پسورد وارد شده اشتباه است" })
-        }
-    } catch {
-        return res.json({ err: "ارور از سرور" })
-    }
-})
+
+            })
+            } else {
+                return res.json({ err: "پسورد وارد شده اشتباه است" })
+            }
+            
+        })
 
 AuthRoute.get("/check-access-token", authorizeMiddleware, async (req, res) => {
     const phone = req.userData?.userPhone
@@ -277,57 +260,53 @@ AuthRoute.post("/profile-setup", authorizeMiddleware, async (req, res) => {
     if (password?.length < 8)
         return res.status(400).json({ err: "رمز وارد شده باید بالای 8 رقم باشد" })
 
-    try {
-        await prisma.user
-            .update({
-                where: { phone: phone },
-                data: {
-                    password,
-                    profile : {
-                        upsert : {
-                            update : {
-                                name : name,
-                                family : lastname
-                                
+
+    bycript.hash(password,9,async(e,hash)=>{
+                if (e) return res.json({err : 'ارور هنگام انکود' , e })
+                try {
+                    await prisma.user
+                        .update({
+                            where: { phone: phone },
+                            data: {
+                                password : hash,
+
+                                profile : {
+                                    create : {
+                                        name : name,
+                                        family : lastname,
+                                    }
+                                },
+                                sellerProfile : {
+                                    create : {
+                                        shopIntro : "",
+                                        userPhone : phone
+                                    }
+                                }
                             },
-                            create : {
-                                family : lastname,
-                                name : name
-                            }
-                        }
-                    },
-                    sellerProfile : {
-                        upsert : {
-                            create : {
-                                shopIntro : ""
-                            },
-                            update : {
-                                shopIntro : ''
-                            }
-                        }
-                    }
-                },
-            })
-            .then(async () => {
-                await prisma.connections.create({
-                    data: {
-                        author: {
-                            connect: {
-                                phone: phone,
-                            },
-                        },
-                    },
-                })
-            })
-            .then(() => {
-                return res.json({ msg: "موفق" })
-            })
-            .catch(() => {
-                return res.json({ err: "نام دیگری انتخاب کنید" })
-            })
-    } catch {
-        return res.status(500)
-    }
+                        })
+                        .then(async () => {
+                            console.log('done')
+                            await prisma.connections.create({
+                                data: {
+                                    author: {
+                                        connect: {
+                                            phone: phone,
+                                        },
+                                    },
+                                },
+                            })
+                        })
+                        .then(() => {
+                            return res.json({ msg: "موفق" })
+                        })
+                        .catch(() => {
+                            return res.json({ err: "قبلا تنظیم شده" })
+                        })
+                } catch {
+                    return res.status(500)
+                }
+
+    })
 })
 
 AuthRoute.post("/profile-setup-two", authorizeMiddleware, async (req, res) => {
@@ -377,24 +356,26 @@ AuthRoute.post("/reset-password", async (req, res) => {
 
 
     const PassGen = makeid(8)
-
-    try {
-        await prisma.user.update({
-            where : {
-                phone
-            },
-            data : {
-                password : PassGen
-            }
-        }).then(()=>{
-            VerifyNumber(phone,PassGen)
-            return res.json({msg : 'موفق'})
-        }).catch(()=>{
-            return res.json({err : "یوزر پیدا نشد   "})
-        })
-    } catch {
-        return res.json({ err: "ارور از سرور" })
-    }
+    bycript.hash(PassGen,9,async(e,hash)=>{
+        if (e) return res.json({err : 'ارور هنگام انکود' , e })
+        try {
+            await prisma.user.update({
+                where : {
+                    phone
+                },
+                data : {
+                    password : hash
+                }
+            }).then(()=>{
+                VerifyNumber(phone,PassGen)
+                return res.json({msg : 'موفق'})
+            }).catch(()=>{
+                return res.json({err : "یوزر پیدا نشد   "})
+            })
+        } catch {
+            return res.json({ err: "ارور از سرور" })
+        }
+    })
 })
 
 AuthRoute.get("/logout",async(req,res)=>{

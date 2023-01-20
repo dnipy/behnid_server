@@ -26,114 +26,79 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
         city_id,
         offPercent,
         freeDelivery,
+        sendArea_list,
         add_story
     } = req.body
 
     console.log(req.body)
+    await prisma.user.findFirst({
+         where : {
+             phone : req.userData.userPhone
+         }
+    })
+    .then(async(usr)=>{
+        await prisma.product.create({
+            data : {
+                author : {
+                    connect : {
+                        userPhone : usr.phone
+                    }
+                },
+                city : {
+                    connect : {
+                        id : Number(city_id)
+                    },
+                },
+                keywords : {
+                    createMany : {
+                        data : keyword_list
+                    },
+                },
+                categorie : {
+                    connect : {
+                        id : Number(cat_id)
+                    }
+                },
+                categorie : {
+                    connect : {
+                        id : Number(cat_id)
+                    }
+                },
+                // categorieID : Number(cat_id),
+                sendArea : {
+                    connect : sendArea_list
+                },
+                customerPrice : Number(customerPrice),
+                producerPrice : Number(producerPrice),
+                price : Number(price),
+                minOrder : Number(minOrder),
+                weight : weight,
+                describe : describe,
+                title : title,
+                deliveryTime : deliveryTime,
+                packType : packType ? packType : "kg",
+                freeDelivery : freeDelivery ? freeDelivery : false,
+                offPercent : offPercent ? Number(offPercent) : null,
+            }
+        }).then((data) => {
+                return res.json({
+                    msg: "موفق",
+                    id: data.id,
+                })
+        }).catch((e)=>{
+            return res.json({err : 'ارور در افزودن محصول',e})
+        })
+    })
+    .catch(()=>{
+        return res.json({err : 'یوزر یافت نشد'})
+    })
 
-    try {
-            await prisma.user.update({
-                    data: {
-                        sellerProfile : {
-                            upsert : {
-                                    create : {
-                                        shopIntro : "",
-                                        products : {
-                                            create : {
-                                                title : title,
-                                                categorie : {
-                                                    connect : {
-                                                        id : Number(cat_id)
-                                                    }
-                                                },
-                                                keywords : {
-                                                    createMany : {
-                                                        data : keyword_list
-                                                    }
-                                            },
-                                            minOrder : minOrder,
-                                            packType : packType,
-                                            price : price,
-                                            customerPrice : customerPrice,
-                                            producerPrice : producerPrice,
-                                            describe : describe,
-                                            freeDelivery : freeDelivery,
-                                            weight : weight,
-                                            deliveryTime : deliveryTime,
-                                            city : {
-                                                connect : {
-                                                    id : Number(city_id)
-                                                }
-                                            },
-                                            productStatus : "pending",
-                                            offPercent : offPercent ? offPercent : null,
-                                            isShown :false
-                                        }
-                                    }
-                                },
-                                update : {
-                                        products : {
-                                            create : {
-                                                title : title,
-                                                categorie : {
-                                                    connect : {
-                                                        id : Number(cat_id)
-                                                    }
-                                                },
-                                                keywords : {
-                                                    createMany : {
-                                                        data : keyword_list
-                                                    }
-                                                },
-                                                minOrder : minOrder,
-                                                packType : packType,
-                                                price : price,
-                                                customerPrice : customerPrice,
-                                                producerPrice : producerPrice,
-                                                describe : describe,
-                                                freeDelivery : freeDelivery,
-                                                weight : weight,
-                                                deliveryTime : deliveryTime,
-                                                city : {
-                                                    connect : {
-                                                        id : Number(city_id)
-                                                    }
-                                                },
-                                                productStatus : "pending",
-                                                offPercent : offPercent ? offPercent : null,
-                                                isShown :false
-                                        }
-                                }
-                            }
-                        }
-                    }
-                },
-                include: {
-                    sellerProfile : {
-                        select : {
-                            products : true
-                        }
-                    }
-                },
-                where : {
-                    phone : req.userData.userPhone
-                },
-                })
-                .then((data) => {
-                    return res.json({
-                        msg: "موفق",
-                        id: data.sellerProfile.products.at(-1).id,
-                    })
-                })
-    } catch (err) {
-        console.log(err)
-        return res.json({ err: "مشکلی پیش آمده است" })
-    }
 })
 
 productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
     const {
         id,
+        title,
         describe,
         price,
         packType,
@@ -146,6 +111,8 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
         cat_id,
         city_id,
         offPercent,
+        freeDelivery,
+        sendArea_list,
         add_story
     } = req.body
 
@@ -164,34 +131,41 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                                         id : Number(id)
                                     },
                                     data : {
-                                        title : title,
+                                        city : {
+                                            connect : {
+                                                id : Number(city_id)
+                                            },
+                                        },
+                                        keywords : {
+                                            createMany : {
+                                                data : keyword_list
+                                            },
+                                        },
                                         categorie : {
                                             connect : {
                                                 id : Number(cat_id)
                                             }
                                         },
-                                        keywords : {
-                                            createMany : {
-                                                data : keyword_list
-                                            }
-                                        },
-                                        minOrder : minOrder,
-                                        packType : packType,
-                                        price : price,
-                                        customerPrice : customerPrice,
-                                        producerPrice : producerPrice,
-                                        describe : describe,
-                                        freeDelivery : freeDelivery,
-                                        weight : weight,
-                                        deliveryTime : deliveryTime,
-                                        city : {
+                                        categorie : {
                                             connect : {
-                                                id : Number(city_id)
+                                                id : Number(cat_id)
                                             }
                                         },
-                                        productStatus : "pending",
-                                        offPercent : offPercent ? offPercent : null,
-                                        isShown :false
+                                        // categorieID : Number(cat_id),
+                                        sendArea : {
+                                            connect : sendArea_list
+                                        },
+                                        customerPrice : Number(customerPrice),
+                                        producerPrice : Number(producerPrice),
+                                        price : Number(price),
+                                        minOrder : Number(minOrder),
+                                        weight : weight,
+                                        describe : describe,
+                                        title : title,
+                                        deliveryTime : deliveryTime,
+                                        packType : packType ? packType : "kg",
+                                        freeDelivery : freeDelivery ? freeDelivery : false,
+                                        offPercent : offPercent ? Number(offPercent) : null,
                                     }
                                 }
                             }
@@ -215,7 +189,7 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                 })
     } catch (err) {
         console.log(err)
-        return res.json({ err: "مشکلی پیش آمده است" })
+        return res.json({ err: "محصول موجود نیست یا شما صاحب محصول نیستید" })
     }
 })
 
@@ -230,14 +204,34 @@ productsRoute.get("/all", async (req, res) => {
         await prisma.product
             .findMany({
                 where: {
-                    isShown : true
+                    isShown : true,
+                    productStatus : "accepted"
                 },
                 skip: Number(start) - 1,
                 take: Number(length),
                 include: {
-                    author: true,
                     city: true,
-                    categorie: true,
+                    author: {
+                        select : {
+                            id : true,
+                            user : {
+                                select : {
+                                    name : true,
+                                    email : true,
+                                    phone : true
+                                }
+                            }
+                        }
+                    },
+                    categorie: {
+                        include : {
+                            subCategory : {
+                                include : {
+                                    mainCategory : true
+                                }
+                            }
+                        }
+                    },
                 },
                 orderBy : {
                     addDate :'desc'
@@ -301,7 +295,8 @@ productsRoute.get("/mine/rejected", authorizeMiddleware, async (req, res) => {
                     products : {
                         where : {
                             productStatus : "rejected"
-                        }
+                        },
+                    
                     }
                 }
             }

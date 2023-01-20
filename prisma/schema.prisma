@@ -199,13 +199,15 @@ model Product {
   imgsrc          String?  
   cityName        String?
   seenTime        Int                   @default(0)
+  categorieID     Int?
+  cityID          Int?
   //relations
   author          sellerProfile         @relation(fields: [authorID],references: [id],onDelete: Cascade )
   savedBy         User[]                @relation(name: "savedProducts")
-  categorie       Category[]            @relation()
+  categorie       Category?             @relation(fields: [categorieID],references: [id],onDelete: Cascade)
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
-  city            City?                 @relation(references: [id],fields: [id],onDelete: Cascade,name: "products")
+  city            City?                 @relation(references: [id],fields: [cityID],onDelete: Cascade,name: "products")
   stories_added   stories[]
   productStatus   ProductStatus         @default(pending)
   freeDelivery    Boolean               @default(false)
