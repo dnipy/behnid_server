@@ -207,7 +207,7 @@ model Product {
   categorie       Category?             @relation(fields: [categorieID],references: [id],onDelete: Cascade)
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
-  city            City?                 @relation(references: [id],fields: [cityID],onDelete: Cascade,name: "products")
+  city            City?                  @relation(references: [id],fields: [cityID],onDelete: Cascade,name: "products")
   unitID          Int?                   @default(1)
   unitName        String?                @default("کیلوگرم")
   unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
@@ -218,6 +218,7 @@ model Product {
   isShown         Boolean               @default(true)
   rejectReason    String                @default("")
   sentTo          message[]             @relation()
+  Faq             FAQ[]                  @relation()                  
   keywords        keywordForProducts[]  
   pictures        picture[]
   offPercent      Int?
@@ -483,6 +484,14 @@ model passwdReg {
   id            Int     @id  @default(autoincrement())
   phone         String    @unique
   verifyCode    String  
+}
+
+
+model FAQ {
+  id            Int     @id  @default(autoincrement())
+  question      String
+  answer        String
+  products      Product[]
 }
 
 
