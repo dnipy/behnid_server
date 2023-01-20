@@ -208,6 +208,9 @@ model Product {
   comments        commentsForProducts[]
   requests        RequestOnProducts[]
   city            City?                 @relation(references: [id],fields: [cityID],onDelete: Cascade,name: "products")
+  unitID          Int?                   @default(1)
+  unitName        String?                @default("کیلوگرم")
+  unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
   stories_added   stories[]
   productStatus   ProductStatus         @default(pending)
   freeDelivery    Boolean               @default(false)
@@ -392,6 +395,10 @@ model FreeRequests {
   force           Boolean               @default(false)
   rejectReason    String                @default("")
   sentTo          message[]             @relation()
+
+  unitID          Int?                   @default(1)
+  unitName        String?                @default("کیلوگرم")
+  unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
 }
 
 
@@ -525,6 +532,15 @@ model message {
   productId   Int?
   request     FreeRequests?   @relation(references: [id],fields: [requestId],onDelete: Cascade)
   requestId   Int?
+}
+
+
+model Unit {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  products  Product[]     
+  requests  FreeRequests[]
+  @@unique([id,name])
 }
 
 

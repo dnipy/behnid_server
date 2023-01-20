@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "FreeRequests" ALTER COLUMN "unitID" DROP NOT NULL,
+ALTER COLUMN "unitName" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "unitID" DROP NOT NULL,
+ALTER COLUMN "unitName" DROP NOT NULL;
