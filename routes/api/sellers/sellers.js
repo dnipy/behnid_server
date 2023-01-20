@@ -187,10 +187,10 @@ sellersRoute.post("/answer-comment",authorizeMiddleware,async (req, res) => {
 
 
 sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
-    const { SellerID , CityID } = req.body
+    const { SellerID , city_list } = req.body
     const { userPhone } = req?.userData
     if (!SellerID) return res.json({ err: "آیدی فروشنده را وارد کنید" })
-    if (!CityID ) return res.json({err : "شهر انتخاب نشده"})
+    if (!city_list ) return res.json({err : "شهر انتخاب نشده"})
 
     const user = await prisma.user.findUnique({
         where : {
@@ -211,9 +211,7 @@ sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
                 sellerProfile : {
                     update : {
                         responseToCities : {
-                            connect : {
-                                id : Number(CityID)
-                            }
+                            connect : city_list
                         }
                     }
                 }
@@ -234,10 +232,10 @@ sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
 
 
 sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
-    const { SellerID , catID } = req.body
+    const { SellerID , cat_list } = req.body
     const { userPhone } = req?.userData
     if (!SellerID) return res.json({ err: "آیدی فروشنده را وارد کنید" })
-    if (!catID ) return res.json({err : "شهر انتخاب نشده"})
+    if (!cat_list ) return res.json({err : "شهر انتخاب نشده"})
 
     const user = await prisma.user.findUnique({
         where : {
@@ -258,9 +256,7 @@ sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
                 sellerProfile : {
                     update : {
                        ActivityCategory : {
-                           connect : {
-                               id : Number(catID)
-                           }
+                           connect : cat_list
                        }
                     }
                 }
@@ -281,7 +277,7 @@ sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
 sellersRoute.post("/add-shop-name",authorizeMiddleware,async (req, res) => {
     const {  name } = req.body
     const { userPhone } = req?.userData
-    if (!name ) return res.json({err : "شهر انتخاب نشده"})
+    if (!name ) return res.json({err : "نام فروشگاه انتخاب نشده"})
 
     const user = await prisma.user.findUnique({
         where : {
