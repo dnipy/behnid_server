@@ -6,6 +6,7 @@ import { uploads } from "../../../middlewares/upload.js"
 import { uploadAudio } from "../../../middlewares/voice_uploads.js"
 import { uploadPdf } from "../../../middlewares/pdf_upload.js"
 import { excludePass } from "../../../funcs/ExcludePass.js"
+import { lasthour } from "../../../funcs/last_h.js"
 
 let prisma = new PrismaClient()
 
@@ -470,6 +471,90 @@ chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
         .catch((e) => {
             return res.json({ err: "ارور در ساخت پیام" })
         })
+})
+
+
+chatRoute.post('/edit-message',authorizeMiddleware,async(req,res)=>{
+    const {userPhone} = req.userData
+    const {msgID,new_msg} = req.body
+
+    const message = await prisma.message.findFirst({
+        where : {
+            id : Number(msgID),
+            date : {
+                gte : lasthour
+            }
+        }
+    }).catch((e)=>{
+        return res.json({err : 'بیش از یک ساعت'})
+    })
+
+
+    
+    if (message){
+        await prisma.user.update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                sender : {
+                    update  : {
+                        where : {
+                            id : Number(msgID)
+                        },
+                        data : {
+                            text : new_msg
+                        }
+                    }
+                }
+            }
+        }).then(()=>{
+            res.json({msg : 'موفق'})
+        }).catch((e)=>{
+            return res.json({err : 'مشکل'})
+        })
+    }
+})
+
+
+
+
+
+chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
+    const {userPhone} = req.userData
+    const {msgID} = req.body
+
+    const message = await prisma.message.findFirst({
+        where : {
+            id : Number(msgID),
+            date : {
+                gte : lasthour
+            }
+        }
+    }).catch((e)=>{
+        return res.json({err : 'بیش از یک ساعت'})
+    })
+
+
+    
+    if (message){
+        await prisma.user.update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                sender : {
+                    delete : {
+                            id : Number(msgID)
+                    }
+                }
+            }
+        }).then(()=>{
+            res.json({msg : 'موفق'})
+        }).catch((e)=>{
+            return res.json({err : 'مشکل'})
+        })
+    }
 })
 
 

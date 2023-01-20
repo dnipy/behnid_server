@@ -9,7 +9,8 @@
         "start": "node index.js",
         "dev": "nodemon index.js",
         "prettier": "npx prettier --write .",
-        "deploy": "pm2 delete expressjs && pm2 start npm --name expressjs -i 2 -- run start -- -p 3001 ",
+        "re-deploy": "pm2 delete expressjs && pm2 start npm --name expressjs -i 2 -- run start -- -p 3001 ",
+        "deploy": "pm2 start npm --name expressjs -i 2 -- run start -- -p 3001 ",
         "studio" : "npx prisma studio",
         "migrate-dev" : "npx prisma migrate dev"
     },

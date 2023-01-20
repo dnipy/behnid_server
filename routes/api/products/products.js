@@ -15,71 +15,116 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
         title,
         describe,
         price,
-        sendArea,
         packType,
         minOrder,
         customerPrice,
         producerPrice,
         weight,
         deliveryTime,
-        catName,
-        City
+        keyword_list,
+        cat_id,
+        city_id,
+        offPercent,
+        freeDelivery,
+        add_story
     } = req.body
 
     console.log(req.body)
 
-    const usr = await prisma.user.findFirst({
-        where: { phone: req.userData.userPhone },
-    })
-    
-
     try {
-        if (usr.Role === "Seller" || usr.Role === "Buyer") {
             await prisma.user.update({
                     data: {
-                        products: {
-                            create: {
-                                title,
-                                customerPrice: customerPrice,
-                                deliveryTime,
-                                describe,
-                                packType,
-                                minOrder,
-                                price: price,
-                                producerPrice: producerPrice,
-                                weight,
-                                sendArea,
-
-                                categorie : {
-                                    connect : {
-                                        name : catName,
-                                    } 
-                                },
-                                city : {
-                                    connect : {
-                                        id : City
+                        sellerProfile : {
+                            upsert : {
+                                    create : {
+                                        shopIntro : "",
+                                        products : {
+                                            create : {
+                                                title : title,
+                                                categorie : {
+                                                    connect : {
+                                                        id : Number(cat_id)
+                                                    }
+                                                },
+                                                keywords : {
+                                                    createMany : {
+                                                        data : keyword_list
+                                                    }
+                                            },
+                                            minOrder : minOrder,
+                                            packType : packType,
+                                            price : price,
+                                            customerPrice : customerPrice,
+                                            producerPrice : producerPrice,
+                                            describe : describe,
+                                            freeDelivery : freeDelivery,
+                                            weight : weight,
+                                            deliveryTime : deliveryTime,
+                                            city : {
+                                                connect : {
+                                                    id : Number(city_id)
+                                                }
+                                            },
+                                            productStatus : "pending",
+                                            offPercent : offPercent ? offPercent : null,
+                                            isShown :false
+                                        }
                                     }
                                 },
-                                
-                            },
-                        },
-                    },
-                    include: {
-                        products: true,
-                    },
-                    where : {
-                        phone : usr.phone
-                    },
+                                update : {
+                                        products : {
+                                            create : {
+                                                title : title,
+                                                categorie : {
+                                                    connect : {
+                                                        id : Number(cat_id)
+                                                    }
+                                                },
+                                                keywords : {
+                                                    createMany : {
+                                                        data : keyword_list
+                                                    }
+                                                },
+                                                minOrder : minOrder,
+                                                packType : packType,
+                                                price : price,
+                                                customerPrice : customerPrice,
+                                                producerPrice : producerPrice,
+                                                describe : describe,
+                                                freeDelivery : freeDelivery,
+                                                weight : weight,
+                                                deliveryTime : deliveryTime,
+                                                city : {
+                                                    connect : {
+                                                        id : Number(city_id)
+                                                    }
+                                                },
+                                                productStatus : "pending",
+                                                offPercent : offPercent ? offPercent : null,
+                                                isShown :false
+                                        }
+                                }
+                            }
+                        }
+                    }
+                },
+                include: {
+                    sellerProfile : {
+                        select : {
+                            products : true
+                        }
+                    }
+                },
+                where : {
+                    phone : req.userData.userPhone
+                },
                 })
                 .then((data) => {
                     return res.json({
                         msg: "موفق",
-                        id: data.products.at(-1).id,
+                        id: data.sellerProfile.products.at(-1).id,
                     })
                 })
-        } else {
-            return res.json({ err: "شما فروشنده نیستید" })
-        }
     } catch (err) {
         console.log(err)
         return res.json({ err: "مشکلی پیش آمده است" })
@@ -89,75 +134,85 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
 productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
     const {
         id,
-        title,
         describe,
         price,
-        sendArea,
         packType,
         minOrder,
         customerPrice,
         producerPrice,
         weight,
         deliveryTime,
-        catName,
-        keywords
+        keyword_list,
+        cat_id,
+        city_id,
+        offPercent,
+        add_story
     } = req.body
 
-    console.log(req.body)
-
-    const user = await prisma.user.findFirst({
-        where: { phone: req.userData.userPhone },
-    })
 
     try {
-        if (user.Role === "Seller") {
-            await prisma.user
-                .update({
-                    where: {
-                        phone: req.userData.userPhone,
-                    },
-                    data: {
-                        products: {
-                            update: {
-                                where: { id: Number(id) },
-                                data: {
-                                    title,
-                                    customerPrice: Number(customerPrice),
-                                    deliveryTime,
-                                    describe,
-                                    packType,
-                                    minOrder: Number(minOrder),
-                                    price: Number(price),
-                                    producerPrice: Number(producerPrice),
-                                    weight,
-                                    sendArea,
-                                    categorie : {
-                                        connect : {
-                                            name : catName
-                                        }
+            await prisma.user.update({
+                where : {
+                    phone : req.userData.userPhone
+                },
+                data : {
+                    sellerProfile : {
+                        update : {
+                            products : {
+                                update : {
+                                    where : {
+                                        id : Number(id)
                                     },
-                                    keywords : {
-                                        createMany : {
-                                            data : keywords ? keywords : [{name : 'محصول-بهنید'}]
-                                        }
+                                    data : {
+                                        title : title,
+                                        categorie : {
+                                            connect : {
+                                                id : Number(cat_id)
+                                            }
+                                        },
+                                        keywords : {
+                                            createMany : {
+                                                data : keyword_list
+                                            }
+                                        },
+                                        minOrder : minOrder,
+                                        packType : packType,
+                                        price : price,
+                                        customerPrice : customerPrice,
+                                        producerPrice : producerPrice,
+                                        describe : describe,
+                                        freeDelivery : freeDelivery,
+                                        weight : weight,
+                                        deliveryTime : deliveryTime,
+                                        city : {
+                                            connect : {
+                                                id : Number(city_id)
+                                            }
+                                        },
+                                        productStatus : "pending",
+                                        offPercent : offPercent ? offPercent : null,
+                                        isShown :false
                                     }
-                                },
-                            },
-                        },
+                                }
+                            }
+                        }
                     },
-                    include: {
-                        products: true,
-                    },
-                })
-                .then((data) => {
+                    
+                },
+                include :{
+                    sellerProfile : {
+                        select : {
+                            products : true
+                        }
+                    }
+                }
+            })
+                .then(async(data) => {
                     return res.json({
                         msg: "موفق",
-                        id: data.products.at(-1).id,
+                        id: data.sellerProfile.products.at(-1).id,
                     })
                 })
-        } else {
-            return res.json({ err: "شما فروشنده نیستید" })
-        }
     } catch (err) {
         console.log(err)
         return res.json({ err: "مشکلی پیش آمده است" })
@@ -189,9 +244,9 @@ productsRoute.get("/all", async (req, res) => {
                 }
             })
             .then((data) => {
-                data.forEach(elm=>{
-                    excludePass(elm?.author,['password'])
-                })
+                // data.forEach(elm=>{
+                //     excludePass(elm?.author,['password'])
+                // })
                 return res.json(data)
             })
             .catch((e) => {
@@ -205,34 +260,27 @@ productsRoute.get("/all", async (req, res) => {
 productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
-        return res.json({ msg: "need both start and length query-params!" })
+        return res.json({ err: "need both start and length query-params!" })
 
-    const IntLenght = parseInt(length)
 
-    try {
-        await prisma.product
-            .findMany({
-                where: {
-                    author: {
-                        phone: req.userData.userPhone,
-                    },
-                },
-                skip: parseInt(start) - 1,
-                take: parseInt(length),
-                include: { author: true },
-            })
-            .then((data) => {
-                data.forEach(elm=>{
-                    excludePass(elm?.author,['password'])
-                })
-                return res.json(data)
-            })
-            .catch((e) => {
-                return res.json({ err: e })
-            })
-    } catch (err) {
-        return res.json({ err: "ارور" })
-    }
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : true
+                }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products)
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e})
+    })
+    
+
 })
 
 
@@ -241,69 +289,56 @@ productsRoute.get("/mine/rejected", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
         return res.json({ msg: "need both start and length query-params!" })
-
-    const IntLenght = parseInt(length)
-
-    try {
-        await prisma.product
-            .findMany({
-                where: {
-                    author: {
-                        phone: req.userData.userPhone,
-                    },
-                    productStatus : "rejected"
-                },
-                skip: parseInt(start) - 1,
-                take: parseInt(length),
-                include: { author: true },
-            })
-            .then((data) => {
-                data.forEach(elm=>{
-                    excludePass(elm?.author,['password'])
-                })
-                return res.json(data)
-            })
-            .catch((e) => {
-                return res.json({ err: e })
-            })
-    } catch (err) {
-        return res.json({ err: "ارور" })
-    }
+    
+    
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "rejected"
+                        }
+                    }
+                }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products)
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e})
+    })
 })
-
 
 productsRoute.get("/mine/pending", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
         return res.json({ msg: "need both start and length query-params!" })
-
-    const IntLenght = parseInt(length)
-
-    try {
-        await prisma.product
-            .findMany({
-                where: {
-                    author: {
-                        phone: req.userData.userPhone,
-                    },
-                    productStatus : "pending"
-                },
-                skip: parseInt(start) - 1,
-                take: parseInt(length),
-                include: { author: true },
-            })
-            .then((data) => {
-                data.forEach(elm=>{
-                    excludePass(elm?.author,['password'])
-                })
-                return res.json(data)
-            })
-            .catch((e) => {
-                return res.json({ err: e })
-            })
-    } catch (err) {
-        return res.json({ err: "ارور" })
-    }
+    
+    
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "pending"
+                        }
+                    }
+                }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products)
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e})
+    })
 })
 
 
@@ -311,34 +346,28 @@ productsRoute.get("/mine/accepted", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
         return res.json({ msg: "need both start and length query-params!" })
-
-    const IntLenght = parseInt(length)
-
-    try {
-        await prisma.product
-            .findMany({
-                where: {
-                    author: {
-                        phone: req.userData.userPhone,
-                    },
-                    productStatus : "accepted"
-                },
-                skip: parseInt(start) - 1,
-                take: parseInt(length),
-                include: { author: true },
-            })
-            .then((data) => {
-                data.forEach(elm=>{
-                    excludePass(elm?.author,['password'])
-                })
-                return res.json(data)
-            })
-            .catch((e) => {
-                return res.json({ err: e })
-            })
-    } catch (err) {
-        return res.json({ err: "ارور" })
-    }
+    
+    
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "accepted"
+                        }
+                    }
+                }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products)
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e })
+    })
 })
 
 
@@ -346,41 +375,35 @@ productsRoute.get("/mine/accepted", authorizeMiddleware, async (req, res) => {
 productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
     const {id} = req.query
     
-    try {
-        await prisma.product
-            .findFirst({
-                where : {
-                    AND : {
-                        author : {
-                            phone: req.userData.userPhone
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            id : Number(id)
                         },
-                        id : Number(id)
-                    }
-                },
-                include : {
-                    requests : {
                         include : {
-                            RequestAuthor : true
+                            categorie : true,
+                            city : true,
+                            comments : true,
+                            author : true,
+                            keywords : true,
+                            pictures : true,
+                            sendArea : true,
                         }
-                    },
-                    comments : true
+                    }
                 }
-            })
-            .then((data) => {
-
-                data.requests.forEach(elm=>{
-                    excludePass(elm.RequestAuthor,['password'])
-                })
-                
-                
-                return res.json(data)
-            })
-            .catch((e) => {
-                return res.json({ err: e })
-            })
-    } catch (err) {
-        return res.json({ err: "ارور" })
-    }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products.at(0))
+    }).catch((e)=>{
+        return res.json({err : "محصول یافت نشد"  , e})
+    })
 })
 
 
@@ -397,24 +420,27 @@ productsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
                     phone: req.userData.userPhone,
                 },
                 data: {
-                    products: {
-                        update : {
-                            where : {
-                                id : Number(id)
-                            },
-                            data : {
-                                isShown : false
-                            }
-                        },
-                        
-                    },
+                   sellerProfile : {
+                       update : {
+                           products : {
+                               update : {
+                                   where : {
+                                       id : Number(id)
+                                   },
+                                   data : {
+                                       isShown : false
+                                   }
+                               }
+                           }
+                       }
+                   }
                 },
             })
             .then(() => {
                 return res.json(`product with id => ${id} deleted`)
             })
-    } catch (error) {
-        return res.send(error)
+    } catch (e) {
+        return res.json({err : "مشکلی پیش آمده است" , e})
     }
 })
 
@@ -447,57 +473,66 @@ productsRoute.get("/single", async (req, res) => {
                 categorie: {
                     select: {
                         name: true,
+                        subCategory : {
+                            select : {
+                                name : true,
+                                mainCatName : true
+                            }
+                        }
                     },
                 },
             },
         })
-        excludePass(product.author,['password'])
+        // excludePass(product.author,['password'])
         return res.json(product)
     } catch (error) {
         return res.json({ err: "محصول مورد نظر موجود نیست" })
     }
 })
 
-productsRoute.post("/set-request", authorizeMiddleware, async (req, res) => {
-    const { id } = req.query
-    const INTid = parseInt(id)
-    const { message, quantity } = req.body
+// productsRoute.post("/set-request", authorizeMiddleware, async (req, res) => {
+//     const { id } = req.query
+//     const INTid = parseInt(id)
+//     const { message, quantity } = req.body
 
-    try {
-        const product = await prisma.product.update({
-            where: {
-                id: INTid,
-            },
-            data: {
-                requests: {
-                    create: {
-                        quantity,
-                        message,
-                        RequestAuthor: {
-                            connect: {
-                                phone: req.userData?.userPhone,
-                            },
-                        },
-                    },
-                },
-            },
-        })
-        return res.json({ msg: "موفق" })
-    } catch (error) {
-        return res.json({ err: "محصول مورد نظر موجود نیست" })
-    }
-})
+//     try {
+//         const product = await prisma.product.update({
+//             where: {
+//                 id: INTid,
+//             },
+//             data: {
+//                 requests: {
+//                     create: {
+//                         quantity,
+//                         message,
+//                         RequestAuthor: {
+//                             connect: {
+//                                 phone: req.userData?.userPhone,
+//                             },
+//                         },
+//                     },
+//                 },
+//             },
+//         })
+//         return res.json({ msg: "موفق" })
+//     } catch (error) {
+//         return res.json({ err: "محصول مورد نظر موجود نیست" })
+//     }
+// })
 
 productsRoute.get("/add-seen", async (req, res) => {
     const { id } = req.query
-    const INTid = parseInt(id)
+
 
     try {
         const product = await prisma.product.findFirst({
             where: {
-                id: INTid,
+                id  : Number(id)
             },
+        }).catch((e)=>{
+            return res.json({err: "خطا در یافت محصول",e})
         })
+
         if (product) {
             await prisma.product.update({
                 where: {

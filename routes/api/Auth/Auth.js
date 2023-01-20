@@ -268,36 +268,47 @@ AuthRoute.get("/check-access-token", authorizeMiddleware, async (req, res) => {
 AuthRoute.post("/profile-setup", authorizeMiddleware, async (req, res) => {
     const phone = req.userData?.userPhone
     console.log(phone)
-    const { password, email, name } = req.body
+    const { password, name , lastname } = req.body
 
     if (!password) return res.json({ err: "پسورد لازم است" })
-    if (!email) return res.json({ err: "ایمیل لازم است" })
+    if (!lastname) return res.json({ err: "نام خانوادگی لازم است" })
     if (!name) return res.json({ err: "نام لازم است" })
 
     if (password?.length < 8)
         return res.status(400).json({ err: "رمز وارد شده باید بالای 8 رقم باشد" })
 
-    const lowerName = `${name}`
-    const lowerEmail = `${email}`
-
-    const LName = lowerName.toLowerCase()
-    const LEmail = lowerEmail.toLowerCase()
-    console.log({
-        LName,
-        LEmail
-    })
     try {
         await prisma.user
             .update({
                 where: { phone: phone },
                 data: {
                     password,
-                    email : LEmail,
-                    name : LName,
+                    profile : {
+                        upsert : {
+                            update : {
+                                name : name,
+                                family : lastname
+                                
+                            },
+                            create : {
+                                family : lastname,
+                                name : name
+                            }
+                        }
+                    },
+                    sellerProfile : {
+                        upsert : {
+                            create : {
+                                shopIntro : ""
+                            },
+                            update : {
+                                shopIntro : ''
+                            }
+                        }
+                    }
                 },
             })
             .then(async () => {
-                console.log('doneeee')
                 await prisma.connections.create({
                     data: {
                         author: {

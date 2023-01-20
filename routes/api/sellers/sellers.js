@@ -86,7 +86,11 @@ sellersRoute.post("/rate",authorizeMiddleware,async (req, res) => {
                         phone : userPhone
                     }
                 },
-                sellerID : Number(SellerID),
+                seller :{
+                    connect : {
+                        id : Number(SellerID),
+                    }
+                },
                 rates : String(rate)
             }
         })
@@ -108,29 +112,33 @@ sellersRoute.post("/add-comment",authorizeMiddleware,async (req, res) => {
 
         await prisma.commentsForSellers.create({
             data : {
-                sellerID : Number(SellerID),
+                seller : {
+                    connect : {
+                        userID : Number(SellerID)
+                    }
+                },
                 commentAuthor : {
                     connect : {
                         phone : userPhone
                     }
                 },
-                message : comment
+                message : comment,
+                
             }
         })
         .then((data) => {
             return res.json(data)
         })
-        .catch(() => {
-            return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
+        .catch((e) => {
+            return res.json({ err: "فروشنده مورد نظر موجود نمیباشد",e })
         })
 })
 
 
 
 sellersRoute.post("/answer-comment",authorizeMiddleware,async (req, res) => {
-    const { SellerID , commentID , comment } = req.body
+    const { commentID , comment } = req.body
     const { userPhone } = req?.userData
-    if (!SellerID) return res.json({ err: "آیدی فروشنده را وارد کنید" })
     if (!commentID , !comment ) return res.json({err : "ایدی کامنت و متن کامنت لازم است"})
 
     const user = await prisma.user.findUnique({
@@ -142,7 +150,7 @@ sellersRoute.post("/answer-comment",authorizeMiddleware,async (req, res) => {
         }
     })
 
-    if (!user.sellerProfile.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
+    if (!user.sellerProfile?.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
         
         await prisma.user.update({
             where : {
