@@ -11,3 +11,10 @@ export const company_authorize = [
     { name: "company_3", maxCount: 1 },
     { name: "company_4", maxCount: 1 },
 ]
+
+
+export const product_photos = [
+    { name: "product_1", maxCount: 1 },
+    { name: "product_2", maxCount: 1 },
+    { name: "product_3", maxCount: 1 },
+]

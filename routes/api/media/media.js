@@ -5,6 +5,7 @@ import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.mi
 import {
     company_authorize,
     Person_authorize,
+    product_photos,
 } from "../../../configs/multiple_fields.js"
 import { uploadAudio } from "../../../middlewares/voice_uploads.js"
 import { uploadPdf } from "../../../middlewares/pdf_upload.js"
@@ -192,13 +193,16 @@ mediaRoute.post(
 mediaRoute.post(
     "/photo/product",
     authorizeMiddleware,
-    uploads.single("product_image"),
+    uploads.fields(product_photos),
     async (req, res) => {
+
         const { productID } = req.query
+
         if (!productID) return res.json({ err: "need productID query" })
-        if (!req.file?.path) return res.json({ err: "need file !" })
-        console.log(req.file?.path)
+        if (!req.files) return res.json({ err: "need file !" })
+        console.log(req.files)
         console.log(req.userData.userPhone)
+
 
         await prisma.user
             .update({
@@ -206,24 +210,46 @@ mediaRoute.post(
                     phone: req.userData.userPhone,
                 },
                 data: {
-                    products: {
-                        update: {
-                            where: {
-                                id: Number(productID),
+                    sellerProfile : {
+                        update : {   
+                            products: {
+                                update: {
+                                where: {
+                                    id: Number(productID),
+                                },
+                                data: {
+                                    image: req.files.product_1?.at(0)?.path ? `/${req.files.product_1.at(0).path}` : null,
+                                    image_2 : req.files?.product_2?.at(0)?.path ? `/${req.files.product_2.at(0).path}` : null,
+                                    image_3 : req.files?.product_3?.at(0)?.path ? `/${req.files.product_3.at(0).path}` : null
+                                },
                             },
-                            data: {
-                                image: "/" + req.file?.path,
-                            },
-                        },
+                        }
                     },
+                    }   
                 },
+                include : {
+                    sellerProfile : {
+                        select : {
+                            products : {
+                                where : {
+                                    id : Number(productID)
+                                },
+                                include : {
+                                    pictures : true,
+                                    city : true
+                                }
+                            }
+                        }
+                    }
+                }
             })
-            .then(() => {
-                return res.json({ msg: "تغییرات با موفقیت اعمال شد" })
+            .then((data) => {
+                return res.json({ msg: "تغییرات با موفقیت اعمال شد" , data })
             })
             .catch((e) => {
                 return res.json({ err: "شما صاحب محصول نیستید", e })
             })
+        // return res.json({files : req.files,prodcuts_photo_list})
     }
 )
 

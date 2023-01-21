@@ -138,6 +138,7 @@ model sellerProfile {
   stories                        stories[]               @relation() 
 
   site_header       String?     
+  site_avatar       String?     
   phone_num_shown   Boolean                              @default(false)
   rates             ratesForSellers[]
   comments          commentsForSellers[] 
@@ -184,6 +185,8 @@ model Product {
   id              Int                   @id @default(autoincrement())
   likes           Int                   @default(0)
   image           String?
+  image_2         String?
+  image_3         String?
   title           String
   describe        String
   price           Int
@@ -195,8 +198,7 @@ model Product {
   producerPrice   Int
   weight          String
   deliveryTime    String
-  authorID        Int  
-  imgsrc          String?  
+  authorID        Int   
   cityName        String?
   seenTime        Int                   @default(0)
   categorieID     Int?

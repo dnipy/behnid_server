@@ -1,11 +1,14 @@
 // * _  Behnid todo file  _ * //
 
 // * Backend
-// !!!!!!!!!!!!!! test-product.js-routes
-// !!!! delete files(image/pdf/audio) after change                      
+// * test-product.js-routes                                ###done###
+// !!!! delete files(image/pdf/audio) after change                               
+// !!!! add-products-images                                
 // ! edit/delete msg                                                    ###done_without_test###
 // * set-product-relation for seller-profile not user                   ###done###
 // * set-story for seller-profile not user                              ###done###
+
+
 
 
 
@@ -16,18 +19,18 @@
 // * add-seller-reates                                                  ###done###
 // * add name to ticket body                                            ###done###
 // * add-user-city                                                      ###done###
-// ! set-seller-activity-cat                                            ###done_without_test  (take single and should take many) ###
-// ! set-seller-activity-city                                           ###done_without_test  (take single and should take many) ###
+// * set-seller-activity-cat                                            ###done###
+// * set-seller-activity-city                                           ###done###
+// * add-keyword (product/request)                                      ###done###                             
+// * server-timezone                                                    ###done###
 // ! audio & pdf msg                                                    ###done_without_test###
 // ! reply msg                                                          ###done_without_test###
 // ! like msg                                                           ###done_without_test###
 // ! send product to chat                                               ###done_without_test###
 // ! send free-req to chat                                              ###done_without_test###
 // ! free-req-(pending/rejected/accepted)                               ###done_without_test###
-// ! add-keyword (product/request)                                                                   
 // ! unfollow                                                       
 // ! accept-prodcut-befor-publish
-// * server-timezone                                                    ###done###
 
 
 
