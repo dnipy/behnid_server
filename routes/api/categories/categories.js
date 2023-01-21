@@ -112,4 +112,15 @@ categoriesRoute.get("/all-proviences", async (req, res) => {
         })
 })
 
+categoriesRoute.get("/all-units", async (req, res) => {
+    await prisma.unit
+        .findMany({})
+        .then((data) => {
+            return res.json(data)
+        })
+        .catch(() => {
+            return res.json({ err: "خطا" })
+        })
+})
+
 export { categoriesRoute }

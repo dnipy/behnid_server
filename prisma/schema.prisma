@@ -220,7 +220,7 @@ model Product {
   isShown         Boolean               @default(true)
   rejectReason    String                @default("")
   sentTo          message[]             @relation()
-  Faq             FAQ[]                  @relation()                  
+  Faq             FAQ[]                 @relation()                  
   keywords        keywordForProducts[]  
   pictures        picture[]
   offPercent      Int?
@@ -378,6 +378,8 @@ model FreeRequests {
   packType        packType    @default(kg)
 
   date            DateTime    @default(now())
+  request_start_date  String?
+  request_expire_date  String?
   imgsrc          String?
 
   categorie       Category[] @relation()
@@ -631,3 +633,4 @@ enum Rates {
   five
   unset
 }
+
