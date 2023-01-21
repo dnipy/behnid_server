@@ -11,7 +11,7 @@ requestsRoute.get("/", (req, res) => {
 })
 
 requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
-    const { name, catName, describe, City , keywords } = req.body
+    const { name, catID, describe, CityID , keywords , unit , quantity} = req.body
     console.log(req.body)
 
     await prisma.user
@@ -25,21 +25,27 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                         name,
                         categorie : {
                             connect: {
-                                name : catName
+                                id : Number(catID)
                             }
                         },
                         describe: describe,
                         imgsrc: "",
                         city : {
                             connect : {
-                                id : Number(City)
+                                id : Number(CityID)
                             }
                         },
                         keywords : {
-                            createMany : {
-                                data : keywords ? keywords : [{name : 'درخواست-بهنید'}]
+                            createMany :{
+                                data : keywords
+                            } 
+                        },
+                        unit : {
+                            connect : {
+                                id : unit ? Number(unit) : 1
                             }
-                        }
+                        },
+                        quantity : quantity ? Number(quantity) : 1
                     },
                 },
             },
@@ -47,8 +53,8 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
         .then(() => {
             return res.json({ msg: "تایید" })
         })
-        .catch(() => {
-            return res.json({ err: "خطا در ارسال پارامتر" })
+        .catch((e) => {
+            return res.json({ err: "خطا در ارسال پارامتر" ,e})
         })
 })
 

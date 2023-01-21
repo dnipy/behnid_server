@@ -27,6 +27,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
         offPercent,
         freeDelivery,
         sendArea_list,
+        unit,
         add_story
     } = req.body
 
@@ -68,6 +69,11 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 sendArea : {
                     connect : sendArea_list
                 },
+                unit : {
+                    connect : {
+                        id : unit ? Number(unit) : 1
+                    }
+                },  
                 customerPrice : Number(customerPrice),
                 producerPrice : Number(producerPrice),
                 price : Number(price),
