@@ -300,9 +300,13 @@ mediaRoute.post(
                     phone: req.userData.userPhone,
                 },
                 data: {
-                    stories : {
-                        create : {
-                            imgSrc : "/" + req.file.path,
+                    sellerProfile : {
+                        update : {
+                            stories : {
+                                create : {
+                                    imgSrc : "/" + req.file.path,
+                                }
+                            }
                         }
                     }
                 },
