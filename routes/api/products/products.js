@@ -101,6 +101,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
 
 })
 
+
 productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
     const {
         id,
@@ -276,6 +277,29 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
         }
     }).then((resp)=>{
         return res.json(resp.sellerProfile.products)
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e})
+    })
+    
+
+})
+
+
+productsRoute.get("/saved-products", authorizeMiddleware, async (req, res) => {
+    const { start, length } = req.query
+    if (!start || !length)
+        return res.json({ err: "need both start and length query-params!" })
+
+
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            savedProducts : true,
+        }
+    }).then((resp)=>{
+        return res.json(resp.savedProducts)
     }).catch((e)=>{
         return res.json({err : "اشکال در لود دیتا" , e})
     })

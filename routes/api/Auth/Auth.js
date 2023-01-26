@@ -73,7 +73,7 @@ AuthRoute.post("/register-confirm", async (req, res) => {
 
     if (code == codeGendb?.verifyCode) {
         const user = await prisma.user
-            .create({ data: { phone: phone, password: "" } })
+            .create({ data: { phone: phone, password: "" , xp_score : 1500 } })
             .catch(() => {
                 return res.json({ err: "مشکل در ساخت یوزر" })
             })

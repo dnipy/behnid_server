@@ -48,7 +48,8 @@ model User {
   // products                       Product[]            @relation("products")
   requestsProducts               RequestOnProducts[]
   savedProducts                  Product[]            @relation("savedProducts")
-
+  xp_score                       Int                  @default(0)
+  
   //comments                    
   commentsBlog                   commentsForBlog[]
   commentsProducts               commentsForProducts[]

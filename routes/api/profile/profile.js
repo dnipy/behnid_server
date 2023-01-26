@@ -25,16 +25,19 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
             include: {
                 profile: true,
                 freeRequests: true,
-                products: true,
                 tickets: true,
-                sellerProfile: true,
-                stories : {
-                    where : {
-                        date : {
-                            gte : new Date(lastDay).toISOString()
+                sellerProfile: {
+                    include : {
+                        products : true,
+                        stories : {
+                            where : {
+                                date : {
+                                    gte : new Date(lastDay).toISOString()
+                                }
+                            }
                         }
                     }
-                }
+                },         
             },
         })
         .then((data) => {
