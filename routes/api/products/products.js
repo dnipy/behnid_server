@@ -22,14 +22,21 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
         weight,
         deliveryTime,
         keyword_list,
+        quantity,
         cat_id,
         city_id,
-        offPercent,
-        freeDelivery,
         sendArea_list,
         unit,
+        offPercent,
+        offCount,
+        freeDelivery,
         add_story
     } = req.body
+
+
+    if (!title || !describe || !price || !customerPrice || !producerPrice){
+        return res.json({err : 'مقادیر ارسالی کم'})
+    }
 
     console.log(req.body)
     await prisma.user.findFirst({
@@ -47,7 +54,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 },
                 city : {
                     connect : {
-                        id : Number(city_id)
+                        id : city_id ?  Number(city_id) : 1160
                     },
                 },
                 keywords : {
@@ -57,12 +64,13 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 },
                 categorie : {
                     connect : {
-                        id : Number(cat_id)
+                        id : cat_id ?  Number(cat_id) : 1
                     }
                 },
-                categorie : {
-                    connect : {
-                        id : Number(cat_id)
+                off : {
+                    create : {
+                        off_count : offCount && offPercent ? Number(offCount) : 0,
+                        off_percent : offCount && offPercent ? Number(offPercent) : 0,
                     }
                 },
                 // categorieID : Number(cat_id),
@@ -77,21 +85,22 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 customerPrice : Number(customerPrice),
                 producerPrice : Number(producerPrice),
                 price : Number(price),
-                minOrder : Number(minOrder),
-                weight : weight,
+                minOrder : minOrder ?  Number(minOrder) : 1,
+                weight : weight ? String(weight) : '',
                 describe : describe,
                 title : title,
-                deliveryTime : deliveryTime,
+                deliveryTime : deliveryTime ?  String(deliveryTime).trim() : '1',
                 packType : packType ? packType : "kg",
                 freeDelivery : freeDelivery ? freeDelivery : false,
-                offPercent : offPercent ? Number(offPercent) : null,
-            }
+                quantity : quantity ? Number(quantity) : 1,
+            },
         }).then((data) => {
                 return res.json({
                     msg: "موفق",
                     id: data.id,
                 })
         }).catch((e)=>{
+            console.log({e})
             return res.json({err : 'ارور در افزودن محصول',e})
         })
     })
@@ -222,12 +231,16 @@ productsRoute.get("/all", async (req, res) => {
                         select : {
                             id : true,
                             user : {
-                                select : {
-                                    name : true,
-                                    email : true,
-                                    phone : true
+                                include : {
+                                    profile : {
+                                        select : {
+                                            name : true, 
+                                            family : true
+                                        }
+                                    }
                                 }
-                            }
+                            },
+                            
                         }
                     },
                     categorie: {
@@ -245,9 +258,9 @@ productsRoute.get("/all", async (req, res) => {
                 }
             })
             .then((data) => {
-                // data.forEach(elm=>{
-                //     excludePass(elm?.author,['password'])
-                // })
+                data.forEach(elm=>{
+                    excludePass(elm?.author?.user,['password'])
+                })
                 return res.json(data)
             })
             .catch((e) => {
@@ -486,6 +499,12 @@ productsRoute.get("/single", async (req, res) => {
                                 avatar: true,
                                 name: true,
                                 id: true,
+                                profile : {
+                                    select : {
+                                        name : true,
+                                        address : true
+                                    }
+                                }
                             },
                         },
                         date: true,
@@ -493,8 +512,25 @@ productsRoute.get("/single", async (req, res) => {
                         repliedComments: true,
                     },
                 },
-                author: true,
-                requests: true,
+                author: {
+                    include : {
+                        user : {
+                            include : {
+                                profile : {
+                                    select : {
+                                        family : true,
+                                        name : true ,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                city : true,
+                sendArea : true,
+                keywords : true ,
+                unit : true,
+                off : true,
                 categorie: {
                     select: {
                         name: true,
@@ -508,7 +544,10 @@ productsRoute.get("/single", async (req, res) => {
                 },
             },
         })
-        // excludePass(product.author,['password'])
+        excludePass(product.author,['phone'])
+        excludePass(product.author.user,['phone'])
+        excludePass(product.author.user,['password'])
+
         return res.json(product)
     } catch (error) {
         return res.json({ err: "محصول مورد نظر موجود نیست" })
