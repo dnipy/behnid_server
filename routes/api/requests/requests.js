@@ -11,7 +11,7 @@ requestsRoute.get("/", (req, res) => {
 })
 
 requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
-    const { name, catID, describe, CityID , keywords , unit , quantity} = req.body
+    const { name, catID, describe, CityID , keywords , unit , quantity , expire_date } = req.body
     console.log(req.body)
 
     await prisma.user
@@ -45,7 +45,8 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                                 id : unit ? Number(unit) : 1
                             }
                         },
-                        quantity : quantity ? Number(quantity) : 1
+                        quantity : quantity ? Number(quantity) : 1,
+                        request_expire_date : expire_date ? expire_date : 'نامشخص'
                     },
                 },
             },
@@ -72,8 +73,15 @@ requestsRoute.get("/all", async (req, res) => {
             },
             skip: parseInt(start) - 1,
             take: parseInt(length),
+            orderBy : {
+                date : 'desc'
+            },
             include: {
-                Author: true,
+                Author: {
+                    include  : {
+                        profile  :true,
+                    }
+                },
                 categorie: {
                     distinct: ["name"],
                 },
@@ -114,12 +122,15 @@ requestsRoute.get("/all-on-my-catgory", authorizeMiddleware ,async (req, res) =>
         .findMany({
             where : {
                 isShown : true,
-                
             },
             skip: parseInt(start) - 1,
             take: parseInt(length),
             include: {
-                Author: true,
+                Author: {
+                    include : {
+                        profile : true
+                    }
+                },
                 categorie: {
                     distinct: ["name"],
                 },
