@@ -73,6 +73,9 @@ model User {
   userOne                        Chats[]                   @relation("userOne")
   userTwo                        Chats[]                   @relation("userTwo")
   contacts                       Contacts[]
+  my_group                       ChatGroup?                @relation("groupAuthor")
+  senderToGroups                 MessageToGroup[]          @relation("SenderToGroup")
+  member_in_groups               ChatGroup[]
 
   //connections
   connection                     Connections?              @relation("AuthorId")
@@ -88,7 +91,7 @@ model User {
 
 model Connections {
   AuthorId    Int    @unique
-  author      User   @relation("AuthorId",references: [id],fields: [AuthorId])
+  author      User   @relation("AuthorId",references: [id],fields: [AuthorId],onDelete: Cascade)
   follower    User[]  @relation("follower")
   following   User[] @relation("following")
 
@@ -99,7 +102,7 @@ model Connections {
 model Notifications {
   id               Int                @id @default(autoincrement())
   AuthorId         Int                @unique
-  user             User               @relation(fields: [AuthorId] , references: [id])
+  user             User               @relation(fields: [AuthorId] , references: [id],onDelete: Cascade)
   message          String             @default("")
   date             DateTime           @default(now())
   seen             Boolean            @default(false)
@@ -107,12 +110,13 @@ model Notifications {
 
 model sellerProfile {
   id               Int                @id @default(autoincrement())
-  user             User               @relation(fields: [userID],references: [id])
+  user             User               @relation(fields: [userID],references: [id],onDelete: Cascade)
   userID           Int                @unique
   userPhone        String             @unique
   shopName         String?
   shopURLname      String?             @unique       
   shopIntro        String
+  working_record   Int                @default(1)
  
  
   sellerStatus     SellerStatus       @default(unAuthorized)  
@@ -139,7 +143,11 @@ model sellerProfile {
   stories                        stories[]               @relation() 
 
   site_header       String?     
-  site_avatar       String?     
+  site_avatar       String?  
+  site_optional_1   String?
+  site_optional_2   String?   
+  site_optional_3   String?   
+  responseTime      String?
   phone_num_shown   Boolean                              @default(false)
   rates             ratesForSellers[]
   comments          commentsForSellers[] 
@@ -147,13 +155,13 @@ model sellerProfile {
 
 
 model Ticket {
-    id              Int         @id @default(autoincrement())
-    user            User        @relation(fields: [userID],references: [id],onDelete: Cascade)
+    id              Int          @id @default(autoincrement())
+    user            User         @relation(fields: [userID],references: [id],onDelete: Cascade)
     userID          Int        
-    title           String      @default("") 
-    message         String
+    title           String       @default("") 
+    message         String 
     status          TicketStatus
-    response        String      @default("")
+    response        String       @default("")
     responseBy      Int?
     responseAuthor  SuperUser?   @relation(fields: [responseBy],references: [id],onDelete: Cascade)
 }
@@ -161,7 +169,7 @@ model Ticket {
 
 model Profile {
   id              Int          @id @default(autoincrement())
-  user            User         @relation(fields: [userID],references: [id])
+  user            User         @relation(fields: [userID],references: [id],onDelete: Cascade)
   userID          Int          @unique
   name            String?      
   family          String?
@@ -173,7 +181,7 @@ model Profile {
 
 model Contacts {
   id              Int          @id @default(autoincrement())
-  user            User?        @relation(fields: [user_Phone],references: [phone])
+  user            User?        @relation(fields: [user_Phone],references: [phone],onDelete: Cascade)
   user_Phone      String?      
   contactName     String?
   contactNumber   String?
@@ -215,17 +223,20 @@ model Product {
   unitName        String?                @default("کیلوگرم")
   unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
   stories_added   stories[]
+  quantity        Int                   @default(1)
   productStatus   ProductStatus         @default(pending)
   freeDelivery    Boolean               @default(false)
   force           Boolean               @default(false)
   isShown         Boolean               @default(true)
   rejectReason    String                @default("")
   sentTo          message[]             @relation()
+  sentToGroups    MessageToGroup[]      @relation()
   Faq             FAQ[]                 @relation()                  
   keywords        keywordForProducts[]  
   pictures        picture[]
-  offPercent      Int?
+  off             OFF[]                 @relation()
 }
+
 
 
 model picture {
@@ -239,7 +250,8 @@ model stories {
   id              Int              @id @default(autoincrement())
   date            DateTime         @default(now())
   authorID        Int
-  authorName      String
+  text            String
+  authorName      String?
   author          sellerProfile    @relation(fields: [authorID],references: [id],onDelete: Cascade)
   seenBy          User[]           @relation(name: "story_seen")
   seenTime        Int              @default(0)
@@ -401,6 +413,8 @@ model FreeRequests {
   force           Boolean               @default(false)
   rejectReason    String                @default("")
   sentTo          message[]             @relation()
+  sentToGroups          MessageToGroup[]             @relation()
+
 
   unitID          Int?                   @default(1)
   unitName        String?                @default("کیلوگرم")
@@ -440,14 +454,14 @@ model CategoryForBlog {
 
 
 model commentsForBlog {
-  id  Int  @id @default(autoincrement())
-  blogID   Int?
-  blog  Blog?   @relation(fields: [blogID],references: [id],onDelete: Cascade)
-  AuthorID  Int?
-  commentAuthor   User?   @relation(fields: [AuthorID],references: [id],onDelete: Cascade)
+  id            Int     @id @default(autoincrement())
+  blogID        Int?
+  blog          Blog?   @relation(fields: [blogID],references: [id],onDelete: Cascade)
+  AuthorID      Int?
+  commentAuthor User?   @relation(fields: [AuthorID],references: [id],onDelete: Cascade)
   repliedComments   commentsForBlogComments[]
-  message   String  @default("")
-  date      DateTime    @default(now())
+  message       String  @default("")
+  date          DateTime @default(now())
 }
 
 
@@ -500,6 +514,14 @@ model FAQ {
 }
 
 
+model OFF {
+  id            Int     @id  @default(autoincrement())
+  off_percent   Int
+  off_count     Int
+  products      Product[]
+}
+
+
 model passwdReset {
   id             Int     @id  @default(autoincrement())
   phone          String    @unique
@@ -519,18 +541,30 @@ model Chats {
   message      message[]
 }
 
-model message {
+model ChatGroup {
+  id                  Int   @id  @default(autoincrement())
+  group_Author        User  @relation( fields: [group_Author_id], references: [id],name :"groupAuthor",onDelete: Cascade)
+  group_Author_id     Int   @unique
+
+  group_members       User[]
+  Messages            MessageToGroup[]   
+
+  name                String
+  describe            String
+  avatar              String     
+}
+
+
+model MessageToGroup {
   id          Int             @id   @default(autoincrement())
  
   chatID      Int
-  chat        Chats           @relation(fields: [chatID],references: [id],onDelete: Cascade)
+  chat        ChatGroup       @relation(references: [id],fields: [chatID],onDelete:Cascade)
   
-  sender      User            @relation( fields: [senderId], references: [id],name :"Sender",onDelete: Cascade)
+  sender      User            @relation( fields: [senderId], references: [id],name :"SenderToGroup",onDelete: Cascade)
   senderId    Int     
  
-  reciever    User            @relation(fields: [recieverId], references: [id],name: "Receiver",onDelete: Cascade)
-  recieverId  Int 
-  
+  messageType ChatType        @default(message)
   image       String?         @default("")
   voice       String?         @default("")
   pdf         String?         @default("")
@@ -546,6 +580,39 @@ model message {
   productId   Int?
   request     FreeRequests?   @relation(references: [id],fields: [requestId],onDelete: Cascade)
   requestId   Int?
+}
+
+
+model message {
+  id          Int             @id   @default(autoincrement())
+ 
+  chatID      Int
+  chat        Chats           @relation(fields: [chatID],references: [id],onDelete: Cascade)
+  
+  sender      User            @relation( fields: [senderId], references: [id],name :"Sender",onDelete: Cascade)
+  senderId    Int     
+ 
+  reciever    User            @relation(fields: [recieverId], references: [id],name: "Receiver",onDelete: Cascade)
+  recieverId  Int 
+  
+
+  messageType ChatType        @default(message)
+  image       String?         @default("")
+  voice       String?         @default("")
+  pdf         String?         @default("")
+  text        String?
+  replyedTo   Int?
+
+  date        DateTime        @default(now())
+  hasSeen     Boolean         @default(false)
+  liked       Boolean         @default(false) 
+
+
+  product     Product?        @relation(references: [id],fields: [productId],onDelete: Cascade)
+  productId   Int?
+  request     FreeRequests?   @relation(references: [id],fields: [requestId],onDelete: Cascade)
+  requestId   Int?
+  
 }
 
 
@@ -635,3 +702,7 @@ enum Rates {
   unset
 }
 
+enum ChatType {
+  remittance
+  message
+}
