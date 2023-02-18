@@ -92,8 +92,6 @@ mediaRoute.post(
     }
 )
 
-
-
 mediaRoute.post(
     "/authorize/sellers/company",
     authorizeMiddleware,
@@ -183,6 +181,50 @@ mediaRoute.post(
             })
             .then((data) => {
                 return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور", e })
+            })
+    }
+)
+
+
+
+mediaRoute.post(
+    "/seller/add-story",
+    authorizeMiddleware,
+    uploads.single("seller_story"),
+    async (req, res) => {
+        const { productID , text } = req.body
+        const user_id = await prisma.user.findFirst({
+            where: { phone: req?.userData?.userPhone },
+        })
+
+        if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
+ 
+        await prisma.sellerProfile
+            .update({
+                where: {
+                    userID: user_id?.id,
+                },
+                data : {
+                    stories : {
+                        create : {
+                            imgSrc : req?.file?.path ? '/'+req?.file?.path : '',
+                            product : {
+                                connect : {
+                                    id : productID ? Number(productID) : null,
+                                }
+                            },
+                            text : text ? text : ''
+                            
+                        }
+                    }
+                }
+               
+            })
+            .then((data) => {
+                return res.json({msg : موفق})
             })
             .catch((e) => {
                 return res.json({ err: "ارور", e })
