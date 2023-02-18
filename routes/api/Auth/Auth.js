@@ -166,9 +166,9 @@ AuthRoute.post("/login", async (req, res) => {
     console.log({ phone , password })
 
     if (phone?.length != 11)
-        return res.status(400).json({ err: "شماره تلفن باید ۱۱ رقم باشد" })
+        return res.json({ err: "شماره تلفن باید ۱۱ رقم باشد" })
     if (password?.length < 8)
-        return res.status(400).json({ err: "رمز عبور باید بالای ۸ رقم باشد" })
+        return res.json({ err: "رمز عبور باید بالای ۸ رقم باشد" })
 
     await prisma.user
         .findFirst({ where: { phone: phone } })
@@ -177,6 +177,7 @@ AuthRoute.post("/login", async (req, res) => {
             const compare = await bycript.compare(password, usr.password)
 
             if (compare) {
+                await prisma.user.update({where : {phone : usr.phone}, data : {isShown : true , status : true}})
                 const accessToken = jwt.sign(
                     { userPhone: phone },
                     process.env.ACCESS_TOKEN_SEC
@@ -188,7 +189,7 @@ AuthRoute.post("/login", async (req, res) => {
             }
         })
         .catch((error) => {
-            return res.status(500).json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" })
+            return res.json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" })
         })
 })
 
@@ -212,7 +213,7 @@ AuthRoute.post("/change-password", authorizeMiddleware, async (req, res) => {
                 await prisma.user
                 .update({
                     where: { phone: phone },
-                    data: { password: hash },
+                    data: { password: hash , },
                 })
                 .then(() => {
                     return res.json({ msg: "موفق" })
@@ -364,7 +365,9 @@ AuthRoute.post("/reset-password", async (req, res) => {
                     phone
                 },
                 data : {
-                    password : hash
+                    password : hash,
+                    status : true , 
+                    isShown : true
                 }
             }).then(()=>{
                 VerifyNumber(phone,PassGen)
@@ -376,6 +379,40 @@ AuthRoute.post("/reset-password", async (req, res) => {
             return res.json({ err: "ارور از سرور" })
         }
     })
+})
+
+
+AuthRoute.post("/deactive", authorizeMiddleware ,async (req, res) => {
+    const { password } = req.body
+    const { userPhone } = req.userData
+
+    await prisma.user
+        .findFirst({ where: { phone: userPhone } })
+        .then(async(usr) => {
+
+            const compare = await bycript.compare(password, usr.password)
+
+            if (compare) {
+                await prisma.user.update({
+                    where : {
+                        phone : userPhone
+                    },
+                    data : {
+                        isShown : false,
+                        status : false
+                    }
+                }).then(()=>{
+                    return res.status(200).json({ msg : 'موفق' })
+                }).catch(()=>{
+                    return res.json({err : 'امکان غیرفعال کردن حساب در این موقعیت وجود ندارد'})
+                })
+            } else {
+                return res.json({ err: "پسورد اشتباه است" })
+            }
+        })
+        .catch((error) => {
+            return res.json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" })
+        })
 })
 
 AuthRoute.get("/logout",async(req,res)=>{
