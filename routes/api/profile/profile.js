@@ -42,8 +42,17 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
         })
         .then((data) => {
             
+            const sent_data = {data,password_seted : true}
+            if (data.password) {
+                sent_data.password_seted = true
+            }
+            else {
+                sent_data.password_seted = false
+            }
+
+
             excludePass(data,['password'])
-            return res.json(data)
+            return res.json(sent_data)
         })
         .catch((e) => {
             return res.json({ msg: e })
@@ -76,6 +85,79 @@ profileRoute.post("/update", authorizeMiddleware, async (req, res) => {
                         },
                     },
                 },
+            },
+        })
+        .then(() => {
+            return res.json({ msg: "اپدیت با موفقیت انجام شد" })
+        })
+        .catch(() => {
+            return res.json({ err: "ارور در فیلد های ارسال شده" })
+        })
+})
+
+
+
+
+profileRoute.post("/update-profile-detailes", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const { name , family } = req.body
+
+    await prisma.user
+        .update({
+            where: { phone: userPhone },
+            data: {
+                profile: {
+                    update : {
+                        name : name ? name : 'کاربر بدون نام',
+                        family : family ? family : 'مشخص نشده'
+                    }
+                },
+            },
+        })
+        .then(() => {
+            return res.json({ msg: "اپدیت با موفقیت انجام شد" })
+        })
+        .catch(() => {
+            return res.json({ err: "ارور در فیلد های ارسال شده" })
+        })
+})
+
+
+profileRoute.post("/update-bio", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const { bio } = req.body
+
+    await prisma.user
+        .update({
+            where: { phone: userPhone },
+            data: {
+                bio : bio ? bio : ''
+            },
+        })
+        .then(() => {
+            return res.json({ msg: "اپدیت با موفقیت انجام شد" })
+        })
+        .catch(() => {
+            return res.json({ err: "ارور در فیلد های ارسال شده" })
+        })
+})
+
+
+profileRoute.post("/update-publics", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const { address , workNumber , instaAcc } = req.body
+
+    await prisma.user
+        .update({
+            where: { phone: userPhone },
+            data: {
+                profile : {
+                    update : {
+                        address : address ,
+                        instaAcc : instaAcc ,
+                        workNumber : workNumber 
+                    }
+                }
             },
         })
         .then(() => {
@@ -162,6 +244,94 @@ profileRoute.get("/my-avatar", authorizeMiddleware, async (req, res) => {
         })
 })
 
+
+profileRoute.get("/my-intresting-products", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    await prisma.user
+        .findUnique({
+            where: { phone: userPhone },
+            include : {
+                savedProducts : {
+                    include: {
+                        city: true,
+                        author: {
+                            select : {
+                                id : true,
+                                user : {
+                                    include : {
+                                        profile : {
+                                            select : {
+                                                name : true, 
+                                                family : true
+                                            }
+                                        }
+                                    }
+                                },
+                                
+                            }
+                        },
+                    }
+                },
+            },
+        })
+        .then((data) => {
+            return res.json(data.savedProducts)
+        })
+        .catch(() => {
+            return res.json({ err: 'ارور هنگام لود دیتا' })
+        })
+})
+
+
+profileRoute.post("/add-to-intresting-products", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const {id} = req.body
+    await prisma.user
+        .update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                savedProducts : {
+                    connect : {
+                        id : Number(id)
+                    },
+                    
+                }
+            }
+        })
+        .then((data) => {
+            return res.json({msg : 'محصول با موفقیت به علاقمندی ها اضافه شد'})
+        })
+        .catch(() => {
+            return res.json({ err: 'ارور هنگام لود دیتا' })
+        })
+})
+
+profileRoute.post("/delete-from-intresting-products", authorizeMiddleware, async (req, res) => {
+    const { userPhone } = req?.userData
+    const {id} = req.body
+    await prisma.user
+        .update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                savedProducts : {
+                    delete : {
+                        id : Number(id)
+                    }
+                }
+            }
+        })
+        .then((data) => {
+            return res.json({msg : 'محصول با موفقیت از علاقمندی ها حذف شد'})
+        })
+        .catch(() => {
+            return res.json({ err: 'ارور هنگام لود دیتا' })
+        })
+})
+
 profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
 
@@ -190,5 +360,8 @@ profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
             return res.json({ error: 1 })
         })
 })
+
+
+
 
 export { profileRoute }
