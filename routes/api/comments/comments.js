@@ -9,29 +9,51 @@ commentsRoute.get("/", (req, res) => {
     res.send("/api/comments")
 })
 
+
+
+
+
 commentsRoute.post("/onProduct", authorizeMiddleware, async (req, res) => {
     const { productID, message } = req.body
-    console.log(req.body)
-    await prisma.user
-        .update({
-            where: {
-                phone: req.userData.userPhone,
+
+    await prisma.product.update({
+            where : {
+                id : Number(productID)
             },
-            data: {
-                commentsProducts: {
-                    create: {
-                        product: {
-                            connect: {
-                                id: parseInt(productID),
-                            },
+            data : {
+                comments : {
+                    create : {
+                        commentAuthor : {
+                            connect : {
+                                phone : req.userData.userPhone
+                            }
                         },
                         message,
                     },
-                },
+                }
             },
+            include : {
+                comments : {
+                    include : {
+                        commentAuthor : {
+                            include : {
+                                profile : {
+                                    select : {
+                                        name : true,
+                                        family : true
+                                    }
+                                }
+                            }
+                        }
+                    }                   
+                }
+            }
+
+        
+
         })
-        .then(() => {
-            return res.json({ msg: "موفق" })
+        .then((resp) => {
+            return res.json(resp.comments?.at(-1))
         })
         .catch((error) => {
             console.log(error)
