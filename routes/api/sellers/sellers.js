@@ -45,14 +45,50 @@ sellersRoute.get("/single", async (req, res) => {
                 id: Number(SellerID),
                 Role : "Seller"
             },
-            include: {
-                products: {
-                    include: {
-                        comments: true,
-                    },
-                    take: 3,
+            include: {   
+                sellerProfile: {
+                    include : {
+                        comments : {
+                            include : {
+                                commentAuthor : {
+                                    include : {
+                                        profile : true
+                                    }
+                                }
+                            }
+                        },
+                        rates : true,
+                        user : {
+                            include : {
+                                profile : true
+                            }
+                        },
+                        products: {
+                            include : {
+                                city : true,
+                                categorie : true,
+                                unit : true,
+                                author: {
+                                    select : {
+                                        id : true,
+                                        user : {
+                                            include : {
+                                                profile : {
+                                                    select : {
+                                                        name : true, 
+                                                        family : true
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        
+                                    }
+                                },
+                            }
+                        },
+                        
+                    }
                 },
-                sellerProfile: true,
                 profile: true,
                 freeRequests: {
                     include: {
@@ -64,8 +100,14 @@ sellersRoute.get("/single", async (req, res) => {
             },
         })
         .then((data) => {
-            excludePass(data,['password'])
-            return res.json(data)
+            data.sellerProfile.products.forEach((elm)=>{
+                excludePass(elm.author.user,['password','phone'])
+            })
+            data.sellerProfile.comments.map((comment)=>{
+                excludePass(comment.commentAuthor ,['password','phone'] )
+            })
+            excludePass(data.sellerProfile.user,['password','phone'])
+            return res.json(data.sellerProfile)
         })
         .catch(() => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
@@ -124,6 +166,13 @@ sellersRoute.post("/add-comment",authorizeMiddleware,async (req, res) => {
                 },
                 message : comment,
                 
+            },
+            include : {
+                commentAuthor : {
+                     include : {
+                         profile : true
+                     }
+                }
             }
         })
         .then((data) => {
