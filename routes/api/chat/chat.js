@@ -45,8 +45,16 @@ chatRoute.post("/newChat", authorizeMiddleware, async (req, res) => {
             },
             include: {
                 message: true,
-                userOne: true,
-                userTwo: true,
+                userOne: {
+                    include : {
+                        profile : true
+                    }
+                },
+                userTwo: {
+                    include : {
+                        profile : true
+                    }
+                },
             }
         })
         .catch((err) => {
@@ -54,6 +62,10 @@ chatRoute.post("/newChat", authorizeMiddleware, async (req, res) => {
         })
 
     if (chat?.id) {
+        excludePass(chat?.userOne,['password','phone'])
+        excludePass(chat?.userTwo,['password','phone'])
+
+
         return res.json({
             id : chat.id,
             message: chat.message,
@@ -186,14 +198,22 @@ chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
             },
 
             include: {
-                userOne: true,
-                userTwo: true,
+                userOne: {
+                    include  : {
+                        profile : true
+                    }
+                },
+                userTwo: {
+                    include : {
+                        profile : true
+                    }
+                },
                 message: {
                     distinct: ["date"],
                     orderBy: {
                         date: "desc",
                     },
-                    take: 1,
+                   
                 },
             },
             orderBy : {
@@ -205,15 +225,16 @@ chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
 
         })
         .then((resp) => {
-            if (!resp) return res.json({ err: "یوزر پیدا نشد" })
+            if (!resp) return res.json({ err: "مکالمه ایی یافت نشد" })
             resp.forEach(elm=>{
-                excludePass(elm.userOne,['password'])
-                excludePass(elm.userTwo,['password'])
+                excludePass(elm.userOne,['password','phone'])
+                excludePass(elm.userTwo,['password','phone'])
+                elm.lastMessageText = elm.message.at(0)?.text ? elm.message.at(-1)?.text : ''
+                elm.lastMessageDate = elm.message.at(0)?.date ? elm.message.at(-1)?.date : ''
             })
-            console.log({resp})
-            // resp.sort((a,b)=>a.message.at(-1).date > b.message.at(-1).date)
-            console.log({resp2 : resp})
-            return res.json(resp)
+            const resp2 = resp.sort((elm_1 , elm_2)=> elm_1.message?.at(-1)?.date != elm_2.message?.at(-1)?.date )
+            console.log(resp2)
+            return res.json(resp2)
         })
         .catch((e) => {
             return res.status(500).json({ e })
@@ -302,7 +323,7 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
                             },
                         },
                         text: message,
-                        replyedTo : replyedTo ? replyedTo : ""
+                        replyedTo : replyedTo ? replyedTo : null
                     },
                 },
             },
@@ -316,7 +337,7 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
             excludePass(resp.userOne,['password'])
             excludePass(resp.userTwo,['password'])
             
-            return res.json(resp)
+            return res.json(resp.message?.at(-1))
         })
         .catch((e) => {
             return res.json({ err: "ارور در ساخت پیام" })
@@ -466,7 +487,7 @@ chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
             excludePass(resp.userOne,['password'])
             excludePass(resp.userTwo,['password'])
             
-            return res.json(resp)
+            return res.json({msg : 'موفق'})
         })
         .catch((e) => {
             return res.json({ err: "ارور در ساخت پیام" })
@@ -517,9 +538,6 @@ chatRoute.post('/edit-message',authorizeMiddleware,async(req,res)=>{
 })
 
 
-
-
-
 chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
     const {userPhone} = req.userData
     const {msgID} = req.body
@@ -559,16 +577,16 @@ chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
 
 
 
-
+// +> /new-img-message
 chatRoute.post(
     "/new-img-message",
     authorizeMiddleware,
     uploads.single("chat_image"),
     async (req, res) => {
-        const { chatID, reciverID } = req.query
+        const { chatID , reciverID , caption , replyedTo } = req.body
 
         if (!chatID) return res.json({ err: 1 })
-        if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
+        if (!req.file?.path) return res.json({ err: " عکس مورد نیاز یافت نشد " })
 
         await prisma.chats
             .update({
@@ -588,8 +606,9 @@ chatRoute.post(
                                     id: Number(reciverID),
                                 },
                             },
-                            text: "",
+                            text: caption ? String(caption) : '',
                             image: "/" + req?.file?.path,
+                            replyedTo : replyedTo ? Number(replyedTo) : null
                         },
                     },
                 },
@@ -598,7 +617,7 @@ chatRoute.post(
                 },
             })
             .then((rsp) => {
-                return res.json(rsp)
+                return res.json(rsp.message.at(-1))
             })
             .catch((e) => {
                 return res.json({ err: "ارور در ساخت پیام", e })
@@ -606,10 +625,56 @@ chatRoute.post(
     }
 )
 
+// => /new-remittance-message
+chatRoute.post(
+    "/new-remittance-message",
+    authorizeMiddleware,
+    uploads.single("chat_remittance_image"),
+    async (req, res) => {
+        const { chatID , reciverID , caption , replyedTo } = req.body
 
+        if (!chatID) return res.json({ err: 1 })
+        if (!req.file?.path) return res.json({ err: " عکس مورد نیاز یافت نشد " })
 
+        await prisma.chats
+            .update({
+                where: {
+                    id: Number(chatID),
+                },
+                data: {
+                    message: {
+                        create: {
+                            sender: {
+                                connect: {
+                                    phone: req?.userData?.userPhone,
+                                },
+                            },
+                            reciever: {
+                                connect: {
+                                    id: Number(reciverID),
+                                },
+                            },
+                            messageType : 'remittance',
+                            text: caption ? String(caption) : '',
+                            image: "/" + req?.file?.path,
+                            replyedTo : replyedTo ? Number(replyedTo) : null
+                        },
+                    },
+                },
+                include: {
+                    message: true,
+                },
+            })
+            .then((rsp) => {
+                return res.json(rsp.message.at(-1))
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور در ساخت پیام", e })
+            })
+    }
+)
 
-
+// => /new-audio-message
 chatRoute.post(
     "/new-audio-message",
     authorizeMiddleware,
@@ -656,15 +721,13 @@ chatRoute.post(
     }
 )
 
-
-
-
+// => /new-pdf-message
 chatRoute.post(
     "/new-pdf-message",
     authorizeMiddleware,
     uploadPdf.single("pdf_file"),
     async (req, res) => {
-        const { chatID, reciverID } = req.query
+        const { chatID, reciverID  , caption , replyedTo} = req.query
 
         if (!chatID) return res.json({ err: 1 })
         if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
@@ -687,8 +750,9 @@ chatRoute.post(
                                     id: Number(reciverID),
                                 },
                             },
-                            text: "",
+                            text: caption ? String(caption) : '',
                             pdf : "/" + req?.file?.path,
+                            replyedTo : replyedTo ? Number(replyedTo) : null
                         },
                     },
                 },
@@ -706,8 +770,6 @@ chatRoute.post(
 )
 
 
-
-
 chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
     const { chatID } = req.query
     if (!chatID) return res.json({ error: 1 })
@@ -721,8 +783,26 @@ chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
             },
             include: {
                 message: true,
-                userOne: true,
-                userTwo: true,
+                userOne: {
+                    include : {
+                        profile : {
+                            select : {
+                                name : true,
+                                family : true
+                            }
+                        }
+                    }
+                },
+                userTwo: {
+                    include : {
+                        profile : {
+                            select : {
+                                name : true,
+                                family : true
+                            }
+                        }
+                    }
+                },
             },
         })
         .then((resp) => {
@@ -734,6 +814,58 @@ chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
             return res.json({ e })
         })
 })
+
+
+chatRoute.get("/chat-remittance", authorizeMiddleware, async (req, res) => {
+    const { chatID } = req.query
+    if (!chatID) return res.json({ error: 1 })
+
+    const intChatID = parseInt(chatID)
+
+    prisma.chats
+        .findFirst({
+            where: {
+                id: intChatID,
+                message : {
+                    every : {
+                        messageType : 'remittance'
+                    }
+                }
+            },
+            include: {
+                message: true,
+                userOne: {
+                    include : {
+                        profile : {
+                            select : {
+                                name : true,
+                                family : true
+                            }
+                        }
+                    }
+                },
+                userTwo: {
+                    include : {
+                        profile : {
+                            select : {
+                                name : true,
+                                family : true
+                            }
+                        }
+                    }
+                },
+            },
+        })
+        .then((resp) => {
+            excludePass(resp.userOne,['password'])
+            excludePass(resp.userTwo,['password'])
+            return res.json(resp)
+        })
+        .catch((e) => {
+            return res.json({ e })
+        })
+})
+
 
 chatRoute.post("/add-contacts", authorizeMiddleware, async (req, res) => {
     console.log(req.body)
@@ -798,5 +930,124 @@ chatRoute.post("/add-contact", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "مشکل", e })
         })
 })
+
+
+
+
+
+
+
+// ! GROUPS 
+
+
+
+
+chatRoute.post("/newGroup", authorizeMiddleware, async (req, res) => {
+    const {contact_numbers_list , name , describe} = req.body
+
+    // contact_numbers_list = [ { phone : "09035095691" } ]
+
+    const my_id = await prisma.user
+        .findUnique({ where: { phone: req.userData?.userPhone } })
+        .catch((err) => {
+            return res.json({ err: "ارور هنگام لود دیتا" })
+    })
+
+    const chat = await prisma.chatGroup
+        .findUnique({
+            where: {
+                group_Author_id : my_id?.id
+            },
+        })
+        .catch((err) => {
+            return res.json({ err: "2ارور هنگام لود دیتا" })
+        })
+
+    if (chat?.id) {
+        return res.json({
+            id : chat.id,
+        })
+    } else {
+        await prisma.chatGroup
+            .create({
+                data: {
+                    group_Author : {
+                         connect : {
+                            id : my_id?.id
+                         }
+                    },
+                    group_members : {
+                        connect : contact_numbers_list
+                    },
+                    
+                    avatar : '',
+                    describe : String(describe),
+                    name : String(name)
+                },
+            })
+            .then((resp) => {
+                return res.json(resp)
+            })
+            .catch((e) => {
+                return res.json({ err : 'ارور هنگام ایجاد گروه شما', e })
+            })
+    }
+})
+
+
+chatRoute.get("/my-groups", authorizeMiddleware, async (req, res) => {
+    const my_id = await prisma.user
+        .findUnique({ where: { phone: req.userData?.userPhone } })
+        .catch((err) => {
+            return res.json({ err: "ارور هنگام لود دیتا" })
+    })
+
+    await prisma.chatGroup
+        .findMany({
+            where: {
+                OR: [
+                    {
+                        group_Author : {
+                            id : my_id.id
+                        },
+                        group_members : {
+                            some : {
+                                id : my_id.id
+                            }
+                        }
+                    }
+                ],
+            },
+
+            include: {
+                Messages: {
+                    distinct: ["date"],
+                    orderBy: {
+                        date: "desc",
+                    },
+                    take: 1,
+                },
+            },
+            orderBy : {
+                messages : {
+                    _count  : 'desc'
+                }
+            }
+        })
+        .then((resp) => {
+            if (!resp) return res.json({ err: "یوزر پیدا نشد" })
+            // resp.forEach(elm=>{
+            //     excludePass(elm.,['password'])
+            // })
+            console.log({resp})
+            // resp.sort((a,b)=>a.message.at(-1).date > b.message.at(-1).date)
+            console.log({resp2 : resp})
+            return res.json(resp)
+        })
+        .catch((e) => {
+            return res.status(500).json({ e })
+        })
+})
+
 
 export { chatRoute }
