@@ -5,6 +5,8 @@ import http from "http"
 import cluster from "cluster"
 import os from "os"
 import compression from 'compression'
+import webpush from 'web-push'
+
 
 
 // * modules-Import
@@ -42,9 +44,10 @@ if (cluster.isMaster) {
     const port = process.env.PORT || 3001
     const httpServer = http.createServer(app)
 
+
     // ? middlewares
     app.use(express.json())
-    app.use(helmet({ crossOriginResourcePolicy: false }))
+    app.use(helmet({ crossOriginResourcePolicy: false , expectCt : false }))
     app.use(compression())
     app.use(bodyParser.urlencoded({ extended: false }))
     app.set("view engine", "ejs")

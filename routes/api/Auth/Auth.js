@@ -7,7 +7,10 @@ import { config } from "dotenv"
 import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 import { makeid } from "../../../funcs/PassGen.js"
 import bycript from "bcrypt"
+import  { CronJob } from "cron"
+import cron from 'node-cron'
 config()
+
 
 const prisma = new PrismaClient()
 const AuthRoute = express.Router()
@@ -42,6 +45,10 @@ AuthRoute.post("/register", async (req, res) => {
                 .then(() => {
                     VerifyNumber(phone, Vcode)
                     console.log(Vcode)
+                   
+
+                   
+
                     return res.json({ msg: "کد تایید ارسال شد" })
                 })
                 .catch(() => {
@@ -189,7 +196,7 @@ AuthRoute.post("/login", async (req, res) => {
             }
         })
         .catch((error) => {
-            return res.json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" })
+            return res.json({ err: "یوزر پیدا نشد یا پسورد اشتباه است" , error })
         })
 })
 
@@ -344,6 +351,45 @@ AuthRoute.post("/profile-setup-two", authorizeMiddleware, async (req, res) => {
 
 
 
+// AuthRoute.post("/reset-password", async (req, res) => {
+//     const { phone } = req.body
+//     console.log(phone)
+
+//     if (phone?.length != 11 )
+//         return res.json({ err: "شماره تلفن اشتباه است" })
+    
+
+//     const user = await prisma.user.findFirst({ where: { phone: phone } })
+//     if (!user) return res.json({err : "یوزری یافت نشد"})
+
+
+//     const PassGen = makeid(6)
+//     bycript.hash(PassGen,9,async(e,hash)=>{
+//         if (e) return res.json({err : 'ارور هنگام انکود' , e })
+//         try {
+//             await prisma.user.update({
+//                 where : {
+//                     phone
+//                 },
+//                 data : {
+//                     password : hash,
+//                     status : true , 
+//                     isShown : true
+//                 }
+//             }).then(()=>{
+//                 VerifyNumber(phone,PassGen)
+//                 return res.json({msg : 'موفق'})
+//             }).catch(()=>{
+//                 return res.json({err : "یوزر پیدا نشد   "})
+//             })
+//         } catch {
+//             return res.json({ err: "ارور از سرور" })
+//         }
+//     })
+// })
+
+
+
 AuthRoute.post("/reset-password", async (req, res) => {
     const { phone } = req.body
     console.log(phone)
@@ -353,34 +399,89 @@ AuthRoute.post("/reset-password", async (req, res) => {
     
 
     const user = await prisma.user.findFirst({ where: { phone: phone } })
-    if (!user) return res.json({err : "یوزری یافت نشد"})
+    if (!user) return res.json({err : "کاربری با این شماره یافت نشد"})
+
+    const Vcode = getRandomIntInclusive(100000, 999999)
 
 
-    const PassGen = makeid(8)
-    bycript.hash(PassGen,9,async(e,hash)=>{
-        if (e) return res.json({err : 'ارور هنگام انکود' , e })
-        try {
-            await prisma.user.update({
-                where : {
-                    phone
-                },
-                data : {
-                    password : hash,
-                    status : true , 
-                    isShown : true
-                }
-            }).then(()=>{
-                VerifyNumber(phone,PassGen)
-                return res.json({msg : 'موفق'})
-            }).catch(()=>{
-                return res.json({err : "یوزر پیدا نشد   "})
-            })
-        } catch {
-            return res.json({ err: "ارور از سرور" })
+    // const PassGen = makeid(6)
+    await prisma.passwdReset.upsert({
+        where : {
+            phone ,
+        },
+        update : {
+            verifyCode : Vcode
+        },
+        create : {
+            verifyCode : Vcode ,
+            phone : phone,
         }
+    }).then(()=>{
+        VerifyNumber(phone,Vcode)
+        return res.json({msg : 'کد تایید ارسال شد'})
+    }).catch((e)=>{
+        return res.json({err : 'خطا هنگام ارسال کد تایید', e})
     })
+    
 })
 
+
+AuthRoute.post("/reset-password-confirm", async (req, res) => {
+    const { phone , code , pass } = req.body
+    console.log(phone)
+
+    if (phone?.length != 11 )
+        return res.json({ err: "شماره تلفن اشتباه است" })
+    
+    if (!pass || String(pass).length < 8) {
+        return res.json({err : 'پسورد کوتاه است'})
+    }
+
+    const user = await prisma.user.findFirst({ where: { phone: phone } })
+    if (!user) return res.json({err : "کاربری با این شماره یافت نشد"})
+
+
+
+    // const PassGen = makeid(6)
+    await prisma.passwdReset.findFirst({
+        where : {
+            phone ,
+        },
+    }).then((resp)=>{
+        console.log(pass)
+        if (resp.verifyCode == code)  {
+            bycript.hash(pass,9,async(e,hash)=>{
+                if (e){
+                    return res.json({err : 'خطا هنگام ساخت پسورد'})
+                } 
+                else {
+
+                    prisma.user.update({
+                        where : {
+                            phone
+                        },
+                        data : {
+                            password : hash
+                        }
+                    }).then(()=>{
+                        console.log('done')
+                        return res.json({msg : 'پسورد با موفقیت تغییر پیدا کرد'})
+                    }).catch((e)=>{
+                        return res.json({err : 'خطا هنگام بروزرسانی پسورد'})
+                    })
+                }
+
+            })
+
+        }
+        else {
+            return res.json({err : 'کد ارسال شده اشتباه است'})
+        }
+    }).catch((e)=>{
+        return res.json({err : 'خطا هنگام ارسال کد تایید', e})
+    })
+    
+})
 
 AuthRoute.post("/deactive", authorizeMiddleware ,async (req, res) => {
     const { password } = req.body

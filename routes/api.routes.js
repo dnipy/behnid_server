@@ -20,7 +20,9 @@ import { chatRoute } from "./api/chat/chat.js"
 import { NotificationsRoute } from "./api/notifications/notifications.js"
 import { uploadImage } from "../middlewares/base64.js"
 import { makeid } from "../funcs/PassGen.js"
+import { spamsRoute } from "./api/spams/spams.js"
 
+import fs from 'fs'
 //initial router
 const apiRoute = express.Router()
 
@@ -41,11 +43,24 @@ apiRoute.use("/profile", profileRoute)
 apiRoute.use("/index-page", IndexRoute)
 apiRoute.use("/tickets", ticketsRoute)
 apiRoute.use("/chats", chatRoute)
+apiRoute.use("/spams", spamsRoute)
 apiRoute.post("/base64", uploadImage)
 
 apiRoute.get("/", (req, res) => {
     const genCode = makeid(8)
     res.send(genCode)
+})
+
+apiRoute.get("/delete-file", (req, res) => {
+    fs.unlink('./test.txt',(err)=>{
+        if (err){
+            console.log(err)
+            return res.json({err})
+        }
+        else {
+            return res.json({msg : 'ok'})
+        }
+    })
 })
 
 export { apiRoute }

@@ -1,5 +1,6 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
+import webpush from 'web-push'
 
 const prisma = new PrismaClient()
 const IndexRoute = express.Router()
@@ -23,6 +24,10 @@ IndexRoute.get("/", async (req, res) => {
     } catch {
         return res.json({ err: 500 })
     }
+})
+
+IndexRoute.get("/gen-push-notif-VAPID-key", async (req, res) => {
+    return res.json(webpush.generateVAPIDKeys())
 })
 
 export { IndexRoute }

@@ -41,9 +41,10 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
             },
         })
         .then((data) => {
-            
+            console.log('data')
             const sent_data = {data,password_seted : true}
-            if (data.password) {
+
+            if (data?.password) {
                 sent_data.password_seted = true
             }
             else {
@@ -51,11 +52,12 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
             }
 
 
-            excludePass(data,['password'])
+            excludePass(sent_data.data,['password'])
+            console.log('sent')
             return res.json(sent_data)
         })
         .catch((e) => {
-            return res.json({ msg: e })
+            return res.json({ err: 'کاربر یافت نشد' })
         })
 })
 
@@ -334,9 +336,13 @@ profileRoute.post("/delete-from-intresting-products", authorizeMiddleware, async
 
 profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
+    const {ShopName , shopIntro } = req.body
+
+    if ( !shopIntro | !ShopName ) return res.json({msg : "نام فروشگاه و اینترو فروشگاه وارد نشده"})
 
     const user = await prisma.user.findUnique({
         where: { phone: userPhone },
+        include : {profile : true}
     })
     if (user.Role == "Seller") return res.json({ msg: "شما فروشنده هستید" })
 
@@ -346,18 +352,25 @@ profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
             data: {
                 Role: "Seller",
                 sellerProfile : {
-                    create : {
-                        shopName : user.name,
-                        shopIntro : ""
-                    }
-                }
+                    upsert : {
+                        create : {
+                            shopName : ShopName ? ShopName :  ` فروشگاه ${user.profile.name}` ,
+                            shopIntro : shopIntro ? shopIntro : "",
+                            userPhone : user.phone
+                        },
+                        update : {
+                            shopName : ShopName ? ShopName : ` فروشگاه ${user.profile.name}`,
+                            shopIntro : shopIntro ? shopIntro : "",
+                        },
+                    },
+                },
             },
         })
         .then((dta) => {
-            return res.json({ msg: "successfull" })
+            return res.json({ msg: "موفق" })
         })
-        .catch(() => {
-            return res.json({ error: 1 })
+        .catch((e) => {
+            return res.json({ err: 1 ,e })
         })
 })
 

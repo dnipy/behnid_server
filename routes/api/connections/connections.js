@@ -17,12 +17,19 @@ connectionsRoute.post("/follow", authorizeMiddleware, async (req, res) => {
 
     const user_one = await prisma.user.findUnique({
         where: { phone: userPhone },
+    }).catch(() => {
+        return res.json({ err: "1یوزر اشتباه" })
     })
     const user_two = await prisma.user
         .findUnique({ where: { id: Number(id) } })
         .catch(() => {
-            return res.json({ err: "یوزر اشتباه" })
-        })
+            return res.json({ err: "2یوزر اشتباه" })
+    })
+
+
+    console.log(user_one?.id , user_two?.id)
+    if (!user_one || !user_two) return res.json({err : "اشکال در اطلاعات یوزر"})
+
 
     if (user_two) {
         await prisma.connections
@@ -83,7 +90,7 @@ connectionsRoute.post("/follow", authorizeMiddleware, async (req, res) => {
                 return res.json({ err: "خطا" })
             })
     } else {
-        return res.json({ err: "no user found" })
+        return res.json({ err: "کاربری یافت نشد" })
     }
 })
 
@@ -143,7 +150,8 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "یوزر اشتباه" })
     })
 
-
+    
+    console.log()
     if (!user_one || !user_two) return res.json({err : "اشکال در اطلاعات یوزر"})
 
 
@@ -155,9 +163,9 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
                 },
                 data: {  
                     follower: {
-                        delete: {
+                        disconnect : {
                             id : user_one.id
-                        },
+                        }
                     },
                 },
             })
@@ -169,7 +177,7 @@ connectionsRoute.post("/unfollow", authorizeMiddleware, async (req, res) => {
                     },
                     data: {
                         following: {
-                            delete: {
+                            disconnect: {
                                 id: user_two.id,
                             },
                         },

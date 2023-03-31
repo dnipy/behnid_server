@@ -4,6 +4,7 @@ import { config } from "dotenv"
 import { excludePass } from "../../../funcs/ExcludePass.js"
 import { lastDay } from '../../../funcs/last-24-h.js'
 import { Categories , Cities , MainCategories , SubCategories , proviences  } from "../../../static/_index.js"
+import { authorizeMiddleware } from "../../../middlewares/authorizeMiddleware.middlewares.js"
 
 config()
 
@@ -36,30 +37,135 @@ usersRoute.get("/all", async (req, res) => {
     })
 })
 
-usersRoute.get("/single", async (req, res) => {
-    const { userID } = req.query
 
-    if (!userID) return res.json({ msg: "یوزر ایدی را وارد کنید" })
+
+
+
+
+usersRoute.get("/single", authorizeMiddleware ,async (req, res) => {
+    const { userID } = req.query
+    const { userPhone } = req?.userData
+
+    if (!userID) return res.json({ err: "یوزر ایدی را وارد کنید" })
     const intUserId = parseInt(userID)
     await prisma.user.findFirst({
         where: {
                  id: intUserId ,
         },
         include : {
-            stories : {
-                where : {
-                    date : {
-                        gte : new Date(lastDay).toISOString(),
-
+            connection : {
+                include : {
+                    follower :{
+                        select : {
+                            id : true,
+                            phone : true
+                        }
+                    },
+                    following :{
+                        select : {
+                            id : true
+                        }
+                    },
+                }
+            },
+            profile : {
+                select : {
+                    name : true,
+                    family : true
+                }
+            },
+            freeRequests : {
+                take : 3 
+            },
+            sellerProfile : {
+                include : {
+                    products : {
+                        include : {
+                            city : true,
+                            unit : true,
+                        }
                     }
                 }
-            }
+            },
+            
         }
     }).then(data=>{
         excludePass(data,['password'])
+        data.connection.follower.forEach(elm=>{
+            excludePass(elm,['password'])
+        })
+        data.connection.following.forEach(elm=>{
+            excludePass(elm,['password'])
+        })
+        data?.connection?.follower?.forEach((elm)=>{
+            if (elm.phone == userPhone) {
+                data.FollowedByME = true
+                excludePass(elm,['phone'])
+            }
+            else {
+                data.FollowedByME = false
+                excludePass(elm,['phone'])
+            }
+        })
         return res.json(data)
     }).catch(()=>{
-        return res.json({err : '500'})
+        return res.json({err : 'کاربری پیدا نشد'})
+    })
+})
+
+
+usersRoute.get("/story", async (req, res) => {
+    const { userID } = req.query
+
+    if (!userID) return res.json({ err: "یوزر ایدی را وارد کنید" })
+    const intUserId = parseInt(userID)
+
+    const user = await  prisma.user.findFirst({
+        where : {
+            id : intUserId
+        }
+    }).catch((err)=>{
+        return res.json({err : 'کاربری یافت نشد',role : 'Not-Found'})
+    })
+
+    if (user?.Role == "Buyer") {
+        console.log(user?.Role)
+        return res.json({err : 'استوری یافت نشد',role : 'Buyer'})
+    }
+
+    await prisma.user.findFirst({
+        where: {
+                 id: intUserId ,
+        },
+        include : {
+            sellerProfile : {
+                include : {
+                    stories : {
+                        where : {
+                            date : {
+                                gte : new Date(lastDay).toISOString()
+                            }
+                        },
+                        include : {
+                            author : {
+                                include : {
+                                    user : {
+                                        include : {
+                                            profile : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+           }
+        }
+    }).then(data=>{
+        excludePass(data,['password'])
+        return res.json(data.sellerProfile.stories)
+    }).catch(()=>{
+        return res.json({err : 'خطا در لود استوری'})
     })
 })
 

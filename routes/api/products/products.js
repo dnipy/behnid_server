@@ -45,6 +45,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
          }
     })
     .then(async(usr)=>{
+        
         await prisma.product.create({
             data : {
                 author : {
@@ -101,7 +102,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 })
         }).catch((e)=>{
             console.log({e})
-            return res.json({err : 'ارور در افزودن محصول',e})
+            return res.json({err : 'افزودن محصول فقط برای فروشندگان مقدور است \n اگر از فروشنده بودن خود اطمینان دارید لطفا بعدا مجددا امتحان فرمایید',e})
         })
     })
     .catch(()=>{
@@ -209,6 +210,85 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
     }
 })
 
+productsRoute.post("/update-to-not-show", authorizeMiddleware, async (req, res) => {
+    const {
+        id,
+    } = req.body
+
+
+    try {
+            await prisma.user.update({
+                where : {
+                    phone : req.userData.userPhone
+                },
+                data : {
+                    sellerProfile : {
+                        update : {
+                            products : {
+                                update : {
+                                    where : {
+                                        id : Number(id)
+                                    },
+                                    data : {
+                                        isShown : false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+                .then(async(data) => {
+                    return res.json({
+                        msg: "موفق",
+
+                    })
+                })
+    } catch (err) {
+        console.log(err)
+        return res.json({ err: "محصول موجود نیست یا شما صاحب محصول نیستید" })
+    }
+})
+
+productsRoute.post("/update-to-show", authorizeMiddleware, async (req, res) => {
+    const {
+        id,
+    } = req.body
+
+
+    try {
+            await prisma.user.update({
+                where : {
+                    phone : req.userData.userPhone
+                },
+                data : {
+                    sellerProfile : {
+                        update : {
+                            products : {
+                                update : {
+                                    where : {
+                                        id : Number(id)
+                                    },
+                                    data : {
+                                        isShown : true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+                .then(async(data) => {
+                    return res.json({
+                        msg: "موفق",
+                    })
+                })
+    } catch (err) {
+        console.log(err)
+        return res.json({ err: "محصول موجود نیست یا شما صاحب محصول نیستید" })
+    }
+})
+
 productsRoute.get("/all", async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
@@ -272,11 +352,6 @@ productsRoute.get("/all", async (req, res) => {
 })
 
 productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
-    const { start, length } = req.query
-    if (!start || !length)
-        return res.json({ err: "need both start and length query-params!" })
-
-
     await prisma.user.findFirst({
         where : {
             phone : req.userData.userPhone
@@ -284,7 +359,20 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
         include : {
             sellerProfile : {
                 select : {
-                    products : true
+                    products : {
+                        include : {
+                            city : true,
+                            author : {
+                                include : {
+                                    user : {
+                                        include : {
+                                            profile : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -297,11 +385,63 @@ productsRoute.get("/mine", authorizeMiddleware, async (req, res) => {
 
 })
 
+productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
+    const {id} = req.query
+
+    await prisma.product.findFirst({
+        where : {
+            id : Number(id),
+            author : {
+                user : {
+                    phone : req.userData.userPhone
+                }
+            }
+        }
+    }).catch(()=>{
+        return res.json({err : 'محصول موجود نیست یا شما صاحب محصول نمی باشید'})
+    })
+    
+    await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            id : Number(id)
+                        },
+                        include : {
+                            city : true,
+                            author : {
+                                include : {
+                                    user : {
+                                        include : {
+                                            profile : true
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+        }
+    }).then((resp)=>{
+        return res.json(resp.sellerProfile.products.length == 0 ? {err  : 'محصولی یافت نشد یا شما صاحب محصول نمی باشید'} : resp.sellerProfile?.products?.at(0))
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e})
+    })
+    
+
+})
+
 
 productsRoute.get("/saved-products", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
     if (!start || !length)
-        return res.json({ err: "need both start and length query-params!" })
+        return res.json({ err: "need both start and length query-params !" })
 
 
     await prisma.user.findFirst({

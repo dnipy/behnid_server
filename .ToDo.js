@@ -9,6 +9,18 @@
 // * set-story for seller-profile not user                              ###done###
 
 
+// cron.schedule( "00 */1 * * * *" , async()=>{
+//     console.log('cron start')
+    
+//     await prisma.passwdReg.update({
+//         where : {phone },
+//         data : {
+//             verifyCode : '',
+//         }
+//     }).then(()=>{
+//         console.log('record deleted')
+//     })
+// } )
 
 
 

@@ -9,6 +9,7 @@ import {
 } from "../../../configs/multiple_fields.js"
 import { uploadAudio } from "../../../middlewares/voice_uploads.js"
 import { uploadPdf } from "../../../middlewares/pdf_upload.js"
+import fs from 'fs'
 
 const mediaRoute = express.Router()
 const prisma = new PrismaClient()
@@ -18,7 +19,7 @@ mediaRoute.get("/", (req, res) => {
 })
 
 mediaRoute.post("/photo", uploads.single("up_file"), (req, res) => {
-    return res.send("/" + req.file.path)
+    return res.send("/" + req?.file?.path)
 })
 
 mediaRoute.post("/audio", uploadAudio.single("up_audio"), (req, res) => {
@@ -156,7 +157,6 @@ mediaRoute.post(
 )
 
 
-
 mediaRoute.post(
     "/seller/add-site_header",
     authorizeMiddleware,
@@ -168,7 +168,8 @@ mediaRoute.post(
         })
 
         if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
- 
+        
+
         await prisma.sellerProfile
             .update({
                 where: {
@@ -189,46 +190,84 @@ mediaRoute.post(
 )
 
 
-
 mediaRoute.post(
     "/seller/add-story",
     authorizeMiddleware,
     uploads.single("seller_story"),
     async (req, res) => {
         const { productID , text } = req.body
+
+        if (!text) return res.json({err : "متن وارد نشده" })
+        
         const user_id = await prisma.user.findFirst({
             where: { phone: req?.userData?.userPhone },
         })
 
-        if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
+        // if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
  
-        await prisma.sellerProfile
+        if (user_id?.Role != "Seller") return res.json({err : "افزودن داستان تنها برای فروشگاه ها امکان پذیر است"})
+        const SentImage = req?.file?.path
+        
+
+
+        if (productID) {
+
+
+            await prisma.sellerProfile
             .update({
                 where: {
-                    userID: user_id?.id,
+                    userPhone : req?.userData?.userPhone
                 },
                 data : {
                     stories : {
                         create : {
-                            imgSrc : req?.file?.path ? '/'+req?.file?.path : '',
+                            imgSrc : SentImage ? SentImage : '',
                             product : {
                                 connect : {
-                                    id : productID ? Number(productID) : null,
+                                    id : Number(productID) 
                                 }
                             },
-                            text : text ? text : ''
-                            
+                            text : text
                         }
                     }
                 }
                
             })
             .then((data) => {
-                return res.json({msg : موفق})
+                console.log('ok')
+                return res.json({msg : 'موفق'})
             })
             .catch((e) => {
-                return res.json({ err: "ارور", e })
+                return res.json({ err: "محصول یافت نشد", e })
             })
+
+        }
+        else {
+            await prisma.sellerProfile
+            .update({
+                where: {
+                    userPhone : req?.userData?.userPhone
+                },
+                data : {
+                    stories : {
+                        create : {
+                            imgSrc : SentImage ? SentImage : '',
+                            text : text,
+
+                        }
+                    }
+                }
+               
+            })
+            .then(() => {
+                return res.json({msg : "موفق"})
+            })
+            .catch((e) => {
+                return res.json({ err: "لطفا دقایقی بعد دوباره تلاش کنید", e })
+            })
+
+        }
+
     }
 )
 
@@ -304,6 +343,20 @@ mediaRoute.post(
         console.log(req.file?.path)
         console.log(req.userData.userPhone)
 
+
+        let oldFile ;
+        await prisma.user.findFirst({
+            where : {
+                phone : req.userData.userPhone
+            }
+        }).then((resp)=>{
+            oldFile = resp.avatar
+        }).catch((e)=>{
+            return res.json({err : 'کاربر یافت نشد' , e})
+        })
+
+
+
         await prisma.user
             .update({
                 where: {
@@ -314,6 +367,18 @@ mediaRoute.post(
                 },
             })
             .then(() => {
+
+                if (oldFile) {
+                    fs.unlink(`.${oldFile}`,(err)=>{
+                        if (err){
+                            console.log(err)
+                        }
+                        else {
+                            console.log('done')
+                        }
+                    })
+                }
+
                 return res
                     .status(200)
                     .json({ msg: "تغییرات با موفقیت اعمال شد", error: 0 })

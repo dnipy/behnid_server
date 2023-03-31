@@ -22,6 +22,9 @@ sellersRoute.get("/all", async (req, res) => {
             where: {
                 Role: "Seller"
             },
+            include : {
+                sellerProfile : true
+            }
         })
         .then((data) => {
             data.forEach(elm=>{
@@ -34,20 +37,21 @@ sellersRoute.get("/all", async (req, res) => {
         })
 })
 
+
 sellersRoute.get("/single", async (req, res) => {
     const { SellerID } = req.query
     if (!SellerID) return res.json({ err: "آیدی فروشنده را وارد کنید" })
 
 
-    await prisma.user
+    await prisma.sellerProfile
         .findFirst({
             where: {
                 id: Number(SellerID),
-                Role : "Seller"
+                // Role : "Seller"
             },
             include: {   
-                sellerProfile: {
-                    include : {
+                // sellerProfile: {
+                    // include : {
                         comments : {
                             include : {
                                 commentAuthor : {
@@ -87,27 +91,110 @@ sellersRoute.get("/single", async (req, res) => {
                             }
                         },
                         
-                    }
-                },
-                profile: true,
-                freeRequests: {
-                    include: {
-                        categorie: true,
-                        city: true,
-                    },
-                    take: 3,
-                },
+                //     }
+                // },
+                // profile: true,
+                // freeRequests: {
+                //     include: {
+                //         categorie: true,
+                //         city: true,
+                //     },
+                //     take: 3,
+                // },
             },
         })
         .then((data) => {
-            data.sellerProfile.products.forEach((elm)=>{
+            // console.log('data')
+            data.products.forEach((elm)=>{
                 excludePass(elm.author.user,['password','phone'])
             })
-            data.sellerProfile.comments.map((comment)=>{
+            data.comments.map((comment)=>{
                 excludePass(comment.commentAuthor ,['password','phone'] )
             })
-            excludePass(data.sellerProfile.user,['password','phone'])
-            return res.json(data.sellerProfile)
+            excludePass(data.user,['password','phone'])
+            return res.json(data)
+        })
+        .catch(() => {
+            return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
+        })
+})
+
+
+sellersRoute.get("/by-name", async (req, res) => {
+    const { SellerName } = req.query
+    if (!SellerName) return res.json({ err: "آیدی فروشنده را وارد کنید" })
+
+
+    await prisma.sellerProfile
+        .findFirst({
+            where: {
+                shopURLname : SellerName
+                // Role : "Seller"
+            },
+            include: {   
+                // sellerProfile: {
+                    // include : {
+                        comments : {
+                            include : {
+                                commentAuthor : {
+                                    include : {
+                                        profile : true
+                                    }
+                                }
+                            }
+                        },
+                        rates : true,
+                        user : {
+                            include : {
+                                profile : true
+                            }
+                        },
+                        products: {
+                            include : {
+                                city : true,
+                                categorie : true,
+                                unit : true,
+                                author: {
+                                    select : {
+                                        id : true,
+                                        user : {
+                                            include : {
+                                                profile : {
+                                                    select : {
+                                                        name : true, 
+                                                        family : true
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        
+                                    }
+                                },
+                            }
+                        },
+                        
+                //     }
+                // },
+                // profile: true,
+                // freeRequests: {
+                //     include: {
+                //         categorie: true,
+                //         city: true,
+                //     },
+                //     take: 3,
+                // },
+            },
+        })
+        .then((data) => {
+            // console.log('data')
+            data.products.forEach((elm)=>{
+                excludePass(elm.author.user,['password','phone'])
+            })
+            data.comments.map((comment)=>{
+                excludePass(comment.commentAuthor ,['password','phone'] )
+            })
+            excludePass(data.user,['password','phone'])
+            return res.json(data)
         })
         .catch(() => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
@@ -143,7 +230,6 @@ sellersRoute.post("/rate",authorizeMiddleware,async (req, res) => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
         })
 })
-
 
 
 sellersRoute.post("/add-comment",authorizeMiddleware,async (req, res) => {
@@ -182,7 +268,6 @@ sellersRoute.post("/add-comment",authorizeMiddleware,async (req, res) => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد",e })
         })
 })
-
 
 
 sellersRoute.post("/answer-comment",authorizeMiddleware,async (req, res) => {
@@ -234,7 +319,6 @@ sellersRoute.post("/answer-comment",authorizeMiddleware,async (req, res) => {
 })
 
 
-
 sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
     const { SellerID , city_list } = req.body
     const { userPhone } = req?.userData
@@ -273,11 +357,6 @@ sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
         })
 })
-
-
-
-
-
 
 
 sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
@@ -320,9 +399,6 @@ sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
 })
 
 
-
-
-
 sellersRoute.post("/add-shop-name",authorizeMiddleware,async (req, res) => {
     const {  name } = req.body
     const { userPhone } = req?.userData
@@ -346,7 +422,7 @@ sellersRoute.post("/add-shop-name",authorizeMiddleware,async (req, res) => {
             data : {
                 sellerProfile : {
                     update : {
-                        shopName : name
+                        shopName : name,
                     }
                 }
             }
@@ -358,6 +434,83 @@ sellersRoute.post("/add-shop-name",authorizeMiddleware,async (req, res) => {
             return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
         })
 })
+
+
+sellersRoute.post("/add-shop-intro",authorizeMiddleware,async (req, res) => {
+    const {  intro } = req.body
+    const { userPhone } = req?.userData
+    if (!intro || String(intro).length < 20 ) return res.json({err : "توضیحات فروشگاه باید بالای 20 رقم باشد"})
+
+    const user = await prisma.user.findUnique({
+        where : {
+            phone : userPhone
+        },
+        include : {
+            sellerProfile : true
+        }
+    })
+
+    if (!user.sellerProfile.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
+        
+        await prisma.user.update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                sellerProfile : {
+                    update : {
+                        shopIntro : String(intro)
+                    }
+                }
+            }
+        })
+        .then((data) => {
+            return res.json({msg : "موفق"})
+        })
+        .catch(() => {
+            return res.json({ err: "فروشنده مورد نظر موجود نمیباشد" })
+        })
+})
+
+
+sellersRoute.post("/add-shop-url",authorizeMiddleware,async (req, res) => {
+    const {  name } = req.body
+    const { userPhone } = req?.userData
+
+    if (!name || String(name).length < 3 ) return res.json({err : "نام فروشگاه انتخاب نشده یا کوتاه است"})
+
+    
+    const user = await prisma.user.findUnique({
+        where : {
+            phone : userPhone
+        },
+        include : {
+            sellerProfile : true
+        }
+    })
+
+    if (!user.sellerProfile.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
+        
+        await prisma.user.update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                sellerProfile : {
+                    update : {
+                        shopURLname : name,
+                    }
+                }
+            }
+        })
+        .then((data) => {
+            return res.json({msg : "موفق"})
+        })
+        .catch(() => {
+            return res.json({ err: "نام دیگری انتخاب د" })
+        })
+})
+
 
 
 export { sellersRoute }

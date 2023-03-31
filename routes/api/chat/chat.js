@@ -73,9 +73,10 @@ chatRoute.post("/newChat", authorizeMiddleware, async (req, res) => {
             userTwo: chat.userTwo,
         })
     } else {
+        console.log('here')
         await prisma.chats
             .create({
-                data: {
+                data: {  
                     userOne: {
                         connect: {
                             phone: req?.userData?.userPhone,
@@ -86,13 +87,16 @@ chatRoute.post("/newChat", authorizeMiddleware, async (req, res) => {
                             id: Number(userID),
                         },
                     },
+                    // userTwoId : Number(userID),
+                    // userOneId : Number(my_id),
+
                 },
             })
             .then((resp) => {
                 return res.json(resp)
             })
             .catch((e) => {
-                return res.json({ e })
+                return res.json({ e , err : 'ارور هنگام ساخت چت' })
             })
     }
 })
@@ -180,6 +184,9 @@ chatRoute.post("/newChat-with-number", authorizeMiddleware, async (req, res) => 
 
 
 chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
+
+
+
     prisma.chats
         .findMany({
             where: {
@@ -209,7 +216,7 @@ chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
                     }
                 },
                 message: {
-                    distinct: ["date"],
+                    // distinct: ["date"],
                     orderBy: {
                         date: "desc",
                     },
@@ -226,18 +233,114 @@ chatRoute.get("/my-chats", authorizeMiddleware, async (req, res) => {
         })
         .then((resp) => {
             if (!resp) return res.json({ err: "مکالمه ایی یافت نشد" })
+            
             resp.forEach(elm=>{
                 excludePass(elm.userOne,['password','phone'])
                 excludePass(elm.userTwo,['password','phone'])
                 elm.lastMessageText = elm.message.at(0)?.text ? elm.message.at(-1)?.text : ''
                 elm.lastMessageDate = elm.message.at(0)?.date ? elm.message.at(-1)?.date : ''
+                elm.message = elm?.message?.slice(0,10)
+                console.log({
+                    date  : elm?.message?.at(0)?.date?.getTime()
+                })
             })
-            const resp2 = resp.sort((elm_1 , elm_2)=> elm_1.message?.at(-1)?.date != elm_2.message?.at(-1)?.date )
-            console.log(resp2)
+            const resp2 = resp.sort((elm_1 , elm_2)=>{
+                const Date_1 =new Date( elm_1.message?.at(0)?.date  ? elm_1.message?.at(0)?.date : 0).getTime()
+                const Date_2 =new Date( elm_2.message?.at(0)?.date ?  elm_2.message?.at(0)?.date : 0).getTime()
+                console.log({Date_1 , Date_2})
+                return Date_2 - Date_1
+            } ) 
+            // console.log(resp2)
             return res.json(resp2)
         })
         .catch((e) => {
             return res.status(500).json({ e })
+        })
+})
+
+
+
+
+
+chatRoute.get("/my-remmitences", authorizeMiddleware, async (req, res) => {
+    prisma.message
+        .findMany({
+            where : {
+                OR : [
+                    {
+                        sender : {
+                            phone : req.userData?.userPhone
+                        },
+                    },
+
+                    {
+                        reciever : {
+                            phone : req.userData?.userPhone
+                        },
+                    }
+                ],
+                messageType : 'remittance'
+            },
+            orderBy : {
+                date : 'desc'
+            },
+            include : {
+                sender : {
+                    select : {
+                        profile : {
+                            select : {
+                                name : true ,
+                                family : true
+                            }
+                        },
+                        avatar : true,
+                    }
+                }
+            }
+        })
+        .then((resp) => {
+            if (!resp) return res.json({ err: "مکالمه ایی یافت نشد" })
+            else {
+                return res.json(resp)
+            }
+        })
+        .catch((e) => {
+            return res.status(500).json({ e })
+        })
+})
+
+
+chatRoute.get("/single-remmitences", authorizeMiddleware, async (req, res) => {
+    const {id} = req.body
+    
+    prisma.message
+        .findFirst({
+            where : {
+                OR : [
+                    {
+                        sender : {
+                            phone : req.userData?.userPhone
+                        },
+                    },
+
+                    {
+                        reciever : {
+                            phone : req.userData?.userPhone
+                        },
+                    }
+                ],
+                messageType : 'remittance',
+                id : Number(id)
+            },
+        })
+        .then((resp) => {
+            if (!resp) return res.json({ err: "حواله ایی یافت نشد" })
+            else {
+                return res.json(resp)
+            }
+        })
+        .catch((e) => {
+            return res.json({ e })
         })
 })
 
@@ -271,6 +374,7 @@ chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
                     console.log(elm.contactNumber)
                     ContactNum.push(elm.contactNumber)
                     ContactsInBehnid.push(elm)
+
                 }
             })
 
@@ -278,6 +382,14 @@ chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
                 where : {
                     phone : {
                         in : ContactNum
+                    },
+                },
+                include : {
+                    profile : {
+                        select : {
+                            name : true ,
+                            family : true
+                        }
                     }
                 }
             }).then((users)=>{
@@ -287,12 +399,35 @@ chatRoute.get("/my-contacts", authorizeMiddleware, async (req, res) => {
                 founded_users = users
             })
 
+
+           
+
             
             return res.json({contacts : ContactsInBehnid , founded_users})
+            
         })
-        .catch(() => {
-            return res.json({ err: "خطا در پایگاه داده" })
-        })
+
+
+
+
+    //////// ALL users
+
+        // await prisma.user.findMany({
+        //     include : {
+        //         profile : {
+        //             select : {
+        //                 name : true,
+        //                 family : true
+        //             }
+        //         }
+        //     }
+        // })
+        // .then((users)=>{
+        //     return res.json({users})
+        // })
+        // .catch(() => {
+        //     return res.json({ err: "خطا در پایگاه داده" })
+        // })
 })
 
 // message routes
@@ -328,7 +463,11 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
                 },
             },
             include: {
-                message: true,
+                message: {
+                    orderBy : {
+                        date : 'desc'
+                    }
+                },
                 userOne : true,
                 userTwo : true
             },
@@ -337,7 +476,8 @@ chatRoute.post("/new-message", authorizeMiddleware, async (req, res) => {
             excludePass(resp.userOne,['password'])
             excludePass(resp.userTwo,['password'])
             
-            return res.json(resp.message?.at(-1))
+            console.log(resp.message?.at(0))
+            return res.json(resp.message?.at(0))
         })
         .catch((e) => {
             return res.json({ err: "ارور در ساخت پیام" })
@@ -456,11 +596,19 @@ chatRoute.post("/send-free-request", authorizeMiddleware, async (req, res) => {
 chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
     const { chatID, messageID} = req.body
 
-    if (!chatID || !messageID) return res.json({ error: 1 })
+    if (!chatID || !messageID) return res.json({ err: 1 })
 
     console.log(req.body)
 
-    prisma.chats
+    const like_state = await prisma.message.findFirst({
+        where : {
+            id : Number(messageID)
+        },
+    }).catch(()=>{
+        return res.json({err : 'پیام یافت نشد'})
+    })
+
+    await prisma.chats
         .update({
             where: {
                 id: Number(chatID),
@@ -472,7 +620,8 @@ chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
                             id : Number(messageID)
                         },
                         data : {
-                            liked : true
+                            liked : !like_state.liked,
+                            date : like_state.date
                         }
                     }
                 },
@@ -495,9 +644,54 @@ chatRoute.post("/like-message", authorizeMiddleware, async (req, res) => {
 })
 
 
+
+chatRoute.get("/seen-message", authorizeMiddleware, async (req, res) => {
+    const { chatID } = req.query
+
+    if (!chatID ) return res.json({ err: 1 })
+
+    console.log(req.body)
+
+    const my_id = await prisma.user
+        .findUnique({ where: { phone: req.userData?.userPhone } })
+        .catch((err) => {
+        return res.json({ err: "ارور هنگام لود دیتا" })
+    })
+
+    await prisma.chats
+        .update({
+            where: {
+                id: Number(chatID),
+            },
+            data: {
+                message: {
+                    updateMany : {
+                        where : {
+                            recieverId : Number(my_id.id),
+                            hasSeen : false
+                        },
+                        data : {
+                            hasSeen : true
+                        }
+                    }
+                },
+            },
+            
+        })
+        .then((resp) => {
+            return res.json({msg : 'موفق'})
+        })
+        .catch((e) => {
+            return res.json({ err: "ارور در دیدن پیام" })
+        })
+})
+
+
 chatRoute.post('/edit-message',authorizeMiddleware,async(req,res)=>{
     const {userPhone} = req.userData
     const {msgID,new_msg} = req.body
+
+    let Fetched_msg ;
 
     const message = await prisma.message.findFirst({
         where : {
@@ -506,13 +700,22 @@ chatRoute.post('/edit-message',authorizeMiddleware,async(req,res)=>{
                 gte : lasthour
             }
         }
-    }).catch((e)=>{
-        return res.json({err : 'بیش از یک ساعت'})
+    }).then((resp)=>{
+        if (!resp) {
+            return res.json({err : 'پیام های بالای یک ساعت قابل تغییر نیستند'})
+        }
+        else {
+            Fetched_msg = resp;
+        }
+    })
+    .catch((e)=>{
+        return res.json({err : 'مشکلی پیش آمده'})
     })
 
 
     
-    if (message){
+    if (Fetched_msg){
+        console.log('msg')
         await prisma.user.update({
             where : {
                 phone : userPhone
@@ -529,8 +732,9 @@ chatRoute.post('/edit-message',authorizeMiddleware,async(req,res)=>{
                     }
                 }
             }
-        }).then(()=>{
-            res.json({msg : 'موفق'})
+        }).then((resp)=>{
+            console.log('up')
+            return res.json({msg : 'موفق'})
         }).catch((e)=>{
             return res.json({err : 'مشکل'})
         })
@@ -542,6 +746,8 @@ chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
     const {userPhone} = req.userData
     const {msgID} = req.body
 
+    let Fetched_msg ;
+
     const message = await prisma.message.findFirst({
         where : {
             id : Number(msgID),
@@ -549,13 +755,20 @@ chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
                 gte : lasthour
             }
         }
-    }).catch((e)=>{
-        return res.json({err : 'بیش از یک ساعت'})
+    }).then((resp)=>{
+        if (!resp) {
+            return res.json({err : 'پیام های بالای یک ساعت حذف نمیشوند!!!'})
+        }
+        else {
+            Fetched_msg = resp;
+        }
+    })
+    .catch((e)=>{
+        return res.json({err : 'مشکلی پیش آمده'})
     })
 
-
     
-    if (message){
+    if (Fetched_msg){
         await prisma.user.update({
             where : {
                 phone : userPhone
@@ -568,7 +781,7 @@ chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
                 }
             }
         }).then(()=>{
-            res.json({msg : 'موفق'})
+            return res.json({msg : 'موفق'})
         }).catch((e)=>{
             return res.json({err : 'مشکل'})
         })
@@ -577,14 +790,14 @@ chatRoute.post('/delete-message',authorizeMiddleware,async(req,res)=>{
 
 
 
-// +> /new-img-message
+// => /new-img-message
 chatRoute.post(
     "/new-img-message",
     authorizeMiddleware,
     uploads.single("chat_image"),
     async (req, res) => {
-        const { chatID , reciverID , caption , replyedTo } = req.body
-
+        const { chatID , reciverID , caption , replyedTo , isRemmitance } = req.body
+        console.log(req.body)
         if (!chatID) return res.json({ err: 1 })
         if (!req.file?.path) return res.json({ err: " عکس مورد نیاز یافت نشد " })
 
@@ -608,7 +821,8 @@ chatRoute.post(
                             },
                             text: caption ? String(caption) : '',
                             image: "/" + req?.file?.path,
-                            replyedTo : replyedTo ? Number(replyedTo) : null
+                            replyedTo : replyedTo ? Number(replyedTo) : null,
+                            messageType : isRemmitance  ? 'remittance' : 'message'
                         },
                     },
                 },
@@ -617,6 +831,7 @@ chatRoute.post(
                 },
             })
             .then((rsp) => {
+                console.log(rsp)
                 return res.json(rsp.message.at(-1))
             })
             .catch((e) => {
@@ -680,8 +895,8 @@ chatRoute.post(
     authorizeMiddleware,
     uploadAudio.single("audio_image"),
     async (req, res) => {
-        const { chatID, reciverID } = req.query
-
+        const { chatID, reciverID } = req.body
+        
         if (!chatID) return res.json({ err: 1 })
         if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
 
@@ -727,11 +942,12 @@ chatRoute.post(
     authorizeMiddleware,
     uploadPdf.single("pdf_file"),
     async (req, res) => {
-        const { chatID, reciverID  , caption , replyedTo} = req.query
+        const { chatID, reciverID  , caption , replyedTo , isRemmitance } = req.body
+        console.log(req.file)
 
         if (!chatID) return res.json({ err: 1 })
         if (!req.file?.path) return res.json({ err: "فایل مورد نیاز " })
-
+        
         await prisma.chats
             .update({
                 where: {
@@ -752,7 +968,11 @@ chatRoute.post(
                             },
                             text: caption ? String(caption) : '',
                             pdf : "/" + req?.file?.path,
-                            replyedTo : replyedTo ? Number(replyedTo) : null
+                            file_orginal_name : req?.file?.originalname,
+                            file_size : String(req?.file?.size), 
+                            replyedTo : replyedTo ? Number(replyedTo) : null,
+                            messageType : isRemmitance  ? 'remittance' : 'message'
+                            
                         },
                     },
                 },
@@ -771,18 +991,49 @@ chatRoute.post(
 
 
 chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
-    const { chatID } = req.query
+    const { chatID , start , length } = req.query
     if (!chatID) return res.json({ error: 1 })
 
     const intChatID = parseInt(chatID)
+    let NoStart ;
+    let NoLength ;
+
+    if (!start || !length ){
+        NoStart = 1
+        NoLength = 10
+    }
+
+    const user_id = (await prisma.user.findFirst({where : {phone : req?.userData?.userPhone}}))?.id
+    
+    if (!user_id) return res.json({err : 'کاربر پیدا نشد'})
 
     prisma.chats
-        .findUnique({
+        .findFirst({
             where: {
                 id: intChatID,
+                OR : [
+                    {
+                        userOne : {
+                            phone : req.userData.userPhone
+                        },
+                    },
+                    {
+                        userTwo : {
+                            phone : req.userData.userPhone
+                        }
+                    }
+                ]
+                
             },
             include: {
-                message: true,
+                message: {
+                    orderBy : {
+                        date : 'desc'
+                    },
+                    skip : start ? Number(start) - 1 : Number(NoStart) ,
+                    take : length ? Number(length) : Number(NoLength),
+                    
+                },
                 userOne: {
                     include : {
                         profile : {
@@ -811,7 +1062,7 @@ chatRoute.get("/chat-messages", authorizeMiddleware, async (req, res) => {
             return res.json(resp)
         })
         .catch((e) => {
-            return res.json({ e })
+            return res.json({ err : 'دسترسی غیر مجاز'})
         })
 })
 
@@ -911,6 +1162,9 @@ chatRoute.post("/add-contact", authorizeMiddleware, async (req, res) => {
     if (!contactName || !contactNumber)
         return res.json({ err: "شماره و اسم مخاطب اجباری است" })
 
+    if (String(contactNumber).length != 11) {
+        return res.json({ err: "فرمت شماره اشتباه است" })
+    }
     await prisma.user
         .update({
             where: { phone: req?.userData?.userPhone },

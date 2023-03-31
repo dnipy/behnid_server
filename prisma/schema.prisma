@@ -2,646 +2,616 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = "postgresql://admin:ninja2afm@127.0.0.1:5432/behnid"
-// }
-
 datasource db {
-  provider =          "postgresql"
-  url      =          "postgresql://postgres:MAtin821363NeW@127.0.0.1:5432/behnid"
+  provider = "postgresql"
+  url      = "postgresql://postgres:MAtin821363NeW@127.0.0.1:5432/behnid"
 }
 
-// postgres:MAtin821363NeW
-
-
-// USER PART////////////
 model User {
-
-  date                           DateTime      @default(now())
-
-  // uniques
-  id                             Int           @id @default(autoincrement())
-  email                          String?       @unique
-  phone                          String        @unique
-  name                           String?       @unique
-
-  // other
-  password                       String 
-  bio                            String?
-  status                         Boolean              @default(true)
-  Role                           userRole             @default(Buyer)
-  avatar                         String?
-  profile                        Profile?
-  isShown                        Boolean              @default(true)
-
-
-
-  
-  //city
-  cityID                         Int?
-  cityName                       String?
-  city                           City?                @relation(fields: [cityID,cityName],references: [id,name])
-
-  //products
-  sellerProfile                  sellerProfile?
-  // products                       Product[]            @relation("products")
-  requestsProducts               RequestOnProducts[]
-  savedProducts                  Product[]            @relation("savedProducts")
-  xp_score                       Int                  @default(0)
-  
-  //comments                    
-  commentsBlog                   commentsForBlog[]
-  commentsProducts               commentsForProducts[]
-  commentsOnProductsComments     commentsForProductsComments[]
-  commentsOnBlogComments         commentsForBlogComments[]
-  commentsOnSellersPages         commentsForSellers[]
-  retesForSellerPages            ratesForSellers[]
-
-
-  //requests
-  freeRequests                   FreeRequests[]           @relation("Author")
-  acceptedByMe                   FreeRequests[]           @relation("acceptedBy")
-  
-  //tickets && notifs
-  tickets                        Ticket[]
-  notifications                  Notifications?
-  
-  //chat
-  sender                         message[]                 @relation("Sender")
-  receiver                       message[]                 @relation("Receiver")
-  userOne                        Chats[]                   @relation("userOne")
-  userTwo                        Chats[]                   @relation("userTwo")
-  contacts                       Contacts[]
-  my_group                       ChatGroup?                @relation("groupAuthor")
-  senderToGroups                 MessageToGroup[]          @relation("SenderToGroup")
-  member_in_groups               ChatGroup[]
-
-  //connections
-  connection                     Connections?              @relation("AuthorId")
-  followers                      Connections[]             @relation("following")
-  following                      Connections[]             @relation("follower")
-  // stories                        stories[]                 @relation("story_author")
-  seenStories                    stories[]                 @relation("story_seen")
-
+  id                         Int                           @id @default(autoincrement())
+  email                      String?                       @unique
+  phone                      String                        @unique
+  name                       String?                       @unique
+  password                   String
+  Role                       userRole                      @default(Buyer)
+  avatar                     String?
+  date                       DateTime                      @default(now())
+  cityID                     Int?
+  cityName                   String?
+  bio                        String?
+  status                     Boolean                       @default(true)
+  isShown                    Boolean                       @default(true)
+  xp_score                   Int                           @default(0)
+  city                       City?                         @relation(fields: [cityID, cityName], references: [id, name])
+  my_group                   ChatGroup?                    @relation("groupAuthor")
+  userOne                    Chats[]                       @relation("userOne")
+  userTwo                    Chats[]                       @relation("userTwo")
+  connection                 Connections?                  @relation("AuthorId")
+  contacts                   Contacts[]
+  freeRequests               FreeRequests[]                @relation("Author")
+  senderToGroups             MessageToGroup[]              @relation("SenderToGroup")
+  notifications              Notifications?
+  profile                    Profile?
+  requestsProducts           RequestOnProducts[]
+  tickets                    Ticket[]
+  commentsBlog               commentsForBlog[]
+  commentsOnBlogComments     commentsForBlogComments[]
+  commentsProducts           commentsForProducts[]
+  commentsOnProductsComments commentsForProductsComments[]
+  commentsOnSellersPages     commentsForSellers[]
+  receiver                   message[]                     @relation("Receiver")
+  sender                     message[]                     @relation("Sender")
+  retesForSellerPages        ratesForSellers?
+  sellerProfile              sellerProfile?
+  member_in_groups           ChatGroup[]
+  acceptedByMe               FreeRequests[]                @relation("acceptedBy")
+  following                  Connections[]                 @relation("follower")
+  followers                  Connections[]                 @relation("following")
+  savedProducts              Product[]                     @relation("savedProducts")
+  seenStories                stories[]                     @relation("story_seen")
+  spams                      SpamUsers[]
 
   @@unique([id, name])
   @@unique([phone, email])
 }
 
 model Connections {
-  AuthorId    Int    @unique
-  author      User   @relation("AuthorId",references: [id],fields: [AuthorId],onDelete: Cascade)
-  follower    User[]  @relation("follower")
-  following   User[] @relation("following")
-
-  @@id([AuthorId])
+  AuthorId  Int    @id @unique
+  author    User   @relation("AuthorId", fields: [AuthorId], references: [id], onDelete: Cascade)
+  follower  User[] @relation("follower")
+  following User[] @relation("following")
 }
 
-
 model Notifications {
-  id               Int                @id @default(autoincrement())
-  AuthorId         Int                @unique
-  user             User               @relation(fields: [AuthorId] , references: [id],onDelete: Cascade)
-  message          String             @default("")
-  date             DateTime           @default(now())
-  seen             Boolean            @default(false)
+  id       Int      @id @default(autoincrement())
+  AuthorId Int      @unique
+  message  String   @default("")
+  date     DateTime @default(now())
+  seen     Boolean  @default(false)
+  user     User     @relation(fields: [AuthorId], references: [id], onDelete: Cascade)
 }
 
 model sellerProfile {
-  id               Int                @id @default(autoincrement())
-  user             User               @relation(fields: [userID],references: [id],onDelete: Cascade)
-  userID           Int                @unique
-  userPhone        String             @unique
-  shopName         String?
-  shopURLname      String?             @unique       
+  id               Int                  @id @default(autoincrement())
+  userID           Int                  @unique
+  sellerStatus     SellerStatus         @default(unAuthorized)
+  verified         Boolean              @default(false)
   shopIntro        String
-  working_record   Int                @default(1)
- 
- 
-  sellerStatus     SellerStatus       @default(unAuthorized)  
-  verified         Boolean            @default(false)
-  sellerType       sellerType         @default(person)
-
-
-  //natural
-  person_1          String?
-  person_2          String?
-  person_3          String?
-  person_4          String?
-
-  //company
-  company_1         String?
-  company_2         String?
-  company_3         String?
-  company_4         String?
-
-  ActivityCategory               Category[]              @relation()
-  responseToCities               City[]                  @relation()  
-
-  products                       Product[]               @relation()     
-  stories                        stories[]               @relation() 
-
-  site_header       String?     
-  site_avatar       String?  
-  site_optional_1   String?
-  site_optional_2   String?   
-  site_optional_3   String?   
-  responseTime      String?
-  phone_num_shown   Boolean                              @default(false)
-  rates             ratesForSellers[]
-  comments          commentsForSellers[] 
+  company_1        String?
+  company_2        String?
+  company_3        String?
+  company_4        String?
+  person_1         String?
+  person_2         String?
+  person_3         String?
+  person_4         String?
+  sellerType       sellerType           @default(person)
+  site_header      String?
+  shopName         String?
+  phone_num_shown  Boolean              @default(false)
+  shopURLname      String?              @unique
+  userPhone        String               @unique
+  site_avatar      String?
+  working_record   Int                  @default(1)
+  site_optional_1  String?
+  site_optional_2  String?
+  site_optional_3  String?
+  responseTime     String?
+  user             User                 @relation(fields: [userID], references: [id], onDelete: Cascade)
+  products         Product[]
+  comments         commentsForSellers[]
+  rates            ratesForSellers[]
+  stories          stories[]
+  ActivityCategory Category[]
+  responseToCities City[]
+  spams            SpamSellers[]
 }
-
 
 model Ticket {
-    id              Int          @id @default(autoincrement())
-    user            User         @relation(fields: [userID],references: [id],onDelete: Cascade)
-    userID          Int        
-    title           String       @default("") 
-    message         String 
-    status          TicketStatus
-    response        String       @default("")
-    responseBy      Int?
-    responseAuthor  SuperUser?   @relation(fields: [responseBy],references: [id],onDelete: Cascade)
+  id             Int          @id @default(autoincrement())
+  userID         Int
+  message        String
+  status         TicketStatus
+  response       String       @default("")
+  responseBy     Int?
+  title          String       @default("")
+  responseAuthor SuperUser?   @relation(fields: [responseBy], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
 
-
 model Profile {
-  id              Int          @id @default(autoincrement())
-  user            User         @relation(fields: [userID],references: [id],onDelete: Cascade)
-  userID          Int          @unique
-  name            String?      
-  family          String?
-  address         String?
-  profilePic      String?
-  instaAcc        String?
-  workNumber      String?
+  id         Int     @id @default(autoincrement())
+  userID     Int     @unique
+  name       String?
+  family     String?
+  address    String?
+  instaAcc   String?
+  profilePic String?
+  workNumber String?
+  user       User    @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
 
 model Contacts {
-  id              Int          @id @default(autoincrement())
-  user            User?        @relation(fields: [user_Phone],references: [phone],onDelete: Cascade)
-  user_Phone      String?      
-  contactName     String?
-  contactNumber   String?
+  id            Int     @id @default(autoincrement())
+  contactName   String?
+  contactNumber String?
+  user_Phone    String?
+  user          User?   @relation(fields: [user_Phone], references: [phone], onDelete: Cascade)
 }
 
-
-
-//PRODUCT PART //////////////
 model Product {
-  id              Int                   @id @default(autoincrement())
-  likes           Int                   @default(0)
-  image           String?
-  image_2         String?
-  image_3         String?
-  title           String
-  describe        String
-  price           Int
-  addDate         DateTime              @default(now())
-  sendArea        City[]                @relation("sendArea")
-  packType        packType              @default(vanet)
-  minOrder        Int
-  customerPrice   Int
-  producerPrice   Int
-  weight          String
-  deliveryTime    String
-  authorID        Int   
-  cityName        String?
-  seenTime        Int                   @default(0)
-  categorieID     Int?
-  cityID          Int?
-  //relations
-  author          sellerProfile         @relation(fields: [authorID],references: [id],onDelete: Cascade )
-  savedBy         User[]                @relation(name: "savedProducts")
-  categorie       Category?             @relation(fields: [categorieID],references: [id],onDelete: Cascade)
-  comments        commentsForProducts[]
-  requests        RequestOnProducts[]
-  city            City?                  @relation(references: [id],fields: [cityID],onDelete: Cascade,name: "products")
-  unitID          Int?                   @default(1)
-  unitName        String?                @default("کیلوگرم")
-  unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
-  stories_added   stories[]
-  quantity        Int                   @default(1)
-  productStatus   ProductStatus         @default(pending)
-  freeDelivery    Boolean               @default(false)
-  force           Boolean               @default(false)
-  isShown         Boolean               @default(true)
-  rejectReason    String                @default("")
-  sentTo          message[]             @relation()
-  sentToGroups    MessageToGroup[]      @relation()
-  Faq             FAQ[]                 @relation()                  
-  keywords        keywordForProducts[]  
-  pictures        picture[]
-  off             OFF[]                 @relation()
+  id            Int                   @id @default(autoincrement())
+  likes         Int                   @default(0)
+  image         String?
+  title         String
+  describe      String
+  price         Int
+  addDate       DateTime              @default(now())
+  minOrder      Int
+  customerPrice Int
+  producerPrice Int
+  weight        String
+  deliveryTime  String
+  authorID      Int
+  packType      packType              @default(vanet)
+  seenTime      Int                   @default(0)
+  force         Boolean               @default(false)
+  freeDelivery  Boolean               @default(false)
+  cityName      String?
+  isShown       Boolean               @default(true)
+  productStatus ProductStatus         @default(pending)
+  rejectReason  String                @default("")
+  categorieID   Int?
+  cityID        Int?
+  unitID        Int?                  @default(1)
+  unitName      String?               @default("کیلوگرم")
+  image_2       String?
+  image_3       String?
+  quantity      Int                   @default(1)
+  author        sellerProfile         @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  categorie     Category?             @relation(fields: [categorieID], references: [id], onDelete: Cascade)
+  city          City?                 @relation("products", fields: [cityID], references: [id], onDelete: Cascade)
+  unit          Unit?                 @relation(fields: [unitID, unitName], references: [id, name], onDelete: Cascade)
+  sentToGroups  MessageToGroup[]
+  requests      RequestOnProducts[]
+  comments      commentsForProducts[]
+  keywords      keywordForProducts[]
+  sentTo        message[]
+  stories_added stories[]
+  Faq           FAQ[]
+  off           OFF[]
+  pictures      picture[]
+  spams         SpamProducts[]
+  savedBy       User[]                @relation("savedProducts")
+  sendArea      City[]                @relation("sendArea")
 }
-
-
 
 model picture {
-  id              Int              @id @default(autoincrement())
-  date            DateTime         @default(now())
-  src             String
-  products        Product[]
+  id       Int       @id @default(autoincrement())
+  date     DateTime  @default(now())
+  src      String
+  products Product[]
 }
 
 model stories {
-  id              Int              @id @default(autoincrement())
-  date            DateTime         @default(now())
-  authorID        Int
-  text            String
-  authorName      String?
-  author          sellerProfile    @relation(fields: [authorID],references: [id],onDelete: Cascade)
-  seenBy          User[]           @relation(name: "story_seen")
-  seenTime        Int              @default(0)
-  imgSrc          String           @default("")
-  productID       Int?
-  product         Product?         @relation(references: [id],fields: [productID],onDelete: Cascade)
+  id         Int           @id @default(autoincrement())
+  authorID   Int
+  authorName String?
+  imgSrc     String?        @default("")
+  seenTime   Int           @default(0)
+  date       DateTime      @default(now())
+  productID  Int?
+  text       String
+  author     sellerProfile @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  product    Product?      @relation(fields: [productID], references: [id], onDelete: Cascade)
+  seenBy     User[]        @relation("story_seen")
 }
 
-
-//add reply for comments
 model commentsForProducts {
-  id                Int                             @id @default(autoincrement())
-  productID         Int?
-  product           Product?                        @relation(fields: [productID],references: [id] , onDelete: Cascade)
-  AuthorID          Int?
-  commentAuthor     User?                           @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
-  repliedComments   commentsForProductsComments[]
-  message           String                          @default("")
-  date              DateTime                        @default(now())
+  id              Int                           @id @default(autoincrement())
+  productID       Int?
+  AuthorID        Int?
+  message         String                        @default("")
+  date            DateTime                      @default(now())
+  commentAuthor   User?                         @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  product         Product?                      @relation(fields: [productID], references: [id], onDelete: Cascade)
+  repliedComments commentsForProductsComments[]
+  spams           SpamCommentsOnProducts[]
 }
-
 
 model commentsForSellers {
-  id                Int                             @id @default(autoincrement())
-  AuthorID          Int?
-  commentAuthor     User?                           @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
-  message           String                          @default("")
-
-  seller            sellerProfile                   @relation(onDelete: Cascade,references: [id],fields: [sellerID])
-  sellerID          Int
-
-  response          String?
-  date              DateTime                        @default(now())
+  id            Int           @id @default(autoincrement())
+  AuthorID      Int?
+  message       String        @default("")
+  sellerID      Int
+  response      String?
+  date          DateTime      @default(now())
+  commentAuthor User?         @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  seller        sellerProfile @relation(fields: [sellerID], references: [id], onDelete: Cascade)
+  spams         SpamCommentsOnSellers[]
 }
-
 
 model ratesForSellers {
-  id                Int                             @id @default(autoincrement())
-  AuthorID          Int                             @unique
-  ratesAuthor       User                            @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
-  rates             Rates                           @default(unset)
-  seller            sellerProfile                   @relation(onDelete: Cascade,references: [id],fields: [sellerID])
-  sellerID          Int
-  date              DateTime                        @default(now())
+  id          Int           @id @default(autoincrement())
+  AuthorID    Int           @unique
+  rates       Rates         @default(unset)
+  sellerID    Int
+  date        DateTime      @default(now())
+  ratesAuthor User          @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  seller      sellerProfile @relation(fields: [sellerID], references: [id], onDelete: Cascade)
 }
-
 
 model commentsForProductsComments {
-  id  Int  @id @default(autoincrement())
-  AuthorID  Int?
-  commentAuthor   User?   @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
-  commentID   Int?
-  comment   commentsForProducts?   @relation(references: [id],fields: [commentID],onDelete: Cascade)
-  message   String  @default("")
-  date    DateTime    @default(now())
+  id            Int                  @id @default(autoincrement())
+  AuthorID      Int?
+  commentID     Int?
+  message       String               @default("")
+  date          DateTime             @default(now())
+  commentAuthor User?                @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  comment       commentsForProducts? @relation(fields: [commentID], references: [id], onDelete: Cascade)
 }
-
-
-//Category PART//////
-
 
 model City {
-  id    Int    @id @default(autoincrement())
-  name  String
-  provienceId   Int
-  // provienceName   String
+  id              Int             @id @default(autoincrement())
+  name            String
+  provienceId     Int
   slug            String?
-  products Product[] @relation("products")
-  productSendArea   Product[] @relation("sendArea")
-  requests  FreeRequests[] @relation()
-  provience   Provience   @relation(references: [id],fields: [provienceId])
-  users   User[]
-  sellers sellerProfile[]
+  provience       Provience       @relation(fields: [provienceId], references: [id])
+  requests        FreeRequests[]
+  products        Product[]       @relation("products")
+  users           User[]
+  sellers         sellerProfile[]
+  productSendArea Product[]       @relation("sendArea")
+
   @@unique([id, name])
 }
-
 
 model Provience {
-  id    Int    @id @default(autoincrement())
-  name  String  
-  slug  String?
-  cities  City[]
-  @@unique([name,id])
+  id     Int     @id @default(autoincrement())
+  name   String
+  slug   String?
+  cities City[]
+
   @@unique([id, name])
+  @@unique([name, id])
 }
 
-
 model MainCategory {
-  id               Int         @id @default(autoincrement())
-  name             String      @unique
-  subCategories    SubCategory[]  @relation()
-  @@unique([id,name])
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  subCategories SubCategory[]
+
+  @@unique([id, name])
 }
 
 model SubCategory {
-  id                 Int    @id @default(autoincrement())
-  name               String @unique
-  categories         Category[]  @relation()
-  mainCategory       MainCategory     @relation(fields: [mainCatName,mainCatId],references: [name,id],onDelete: Cascade)
-  mainCatName        String          @default("")          
-  mainCatId          Int             @default(1)
-  @@unique([id,name])
+  id           Int          @id @default(autoincrement())
+  name         String       @unique
+  mainCatName  String       @default("")
+  mainCatId    Int          @default(1)
+  mainCategory MainCategory @relation(fields: [mainCatName, mainCatId], references: [name, id], onDelete: Cascade)
+  categories   Category[]
+
+  @@unique([id, name])
 }
 
 model Category {
-  id                Int                      @id @default(autoincrement())
-  name              String                   @unique
-  products          Product[]                @relation()
-  requests          FreeRequests[]           @relation()
-  users             sellerProfile[]          @relation()
-  subCategory       SubCategory              @relation(fields: [subCatName,subCatId],references: [name,id],onDelete: Cascade)
-  subCatName        String                   @default("")          
-  subCatId          Int                      @default(1)
-  @@unique([id,name])
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  subCatId    Int             @default(1)
+  subCatName  String          @default("")
+  subCategory SubCategory     @relation(fields: [subCatName, subCatId], references: [name, id], onDelete: Cascade)
+  products    Product[]
+  requests    FreeRequests[]
+  users       sellerProfile[]
+
+  @@unique([id, name])
 }
 
-
-//requests part//////////
 model RequestOnProducts {
-  id      Int         @id @default(autoincrement())
-  productID Int?
-  product   Product? @relation(fields: [productID],references: [id],onDelete: Cascade)
-  quantity    Int
-  message     String?
-  AuthorID  Int
-  RequestAuthor   User   @relation(fields: [AuthorID],references: [id],onDelete: Cascade)
-  date  DateTime  @default(now())
+  id            Int      @id @default(autoincrement())
+  productID     Int?
+  quantity      Int
+  AuthorID      Int
+  date          DateTime @default(now())
+  message       String?
+  RequestAuthor User     @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  product       Product? @relation(fields: [productID], references: [id], onDelete: Cascade)
 }
-
-
 
 model FreeRequests {
-  id              Int         @id @default(autoincrement())
-  name            String
-  describe        String
-  quantity        Int         @default(1)
-  packType        packType    @default(kg)
-
-  date            DateTime    @default(now())
+  id                  Int                      @id @default(autoincrement())
+  date                DateTime                 @default(now())
+  name                String
+  describe            String
+  authorID            Int
+  imgsrc              String?
+  cityId              Int?
+  quantity            Int                      @default(1)
+  seenTime            Int                      @default(0)
+  isShown             Boolean                  @default(true)
+  packType            packType                 @default(kg)
+  force               Boolean                  @default(false)
+  rejectReason        String                   @default("")
+  status              RequestStatus            @default(pending)
+  unitID              Int?                     @default(1)
+  unitName            String?                  @default("کیلوگرم")
+  request_expire_date String?
   request_start_date  String?
-  request_expire_date  String?
-  imgsrc          String?
-
-  categorie       Category[] @relation()
-  acceptedBy      User[]    @relation(name :"acceptedBy")   
-  
-  isShown         Boolean               @default(true)
-  seenTime        Int    @default(0)
-
-
-  city            City?     @relation(references: [id],fields: [cityId],onDelete: Cascade)
-  cityId          Int?
-  
-  Author          User  @relation(name:"Author",fields: [authorID],references: [id],onDelete: Cascade)
-  authorID        Int
-
-  keywords        keywordForFreeRequests[]
-  status          RequestStatus         @default(pending)
-  force           Boolean               @default(false)
-  rejectReason    String                @default("")
-  sentTo          message[]             @relation()
-  sentToGroups          MessageToGroup[]             @relation()
-
-
-  unitID          Int?                   @default(1)
-  unitName        String?                @default("کیلوگرم")
-  unit            Unit?                  @relation(references: [id,name],fields: [unitID,unitName],onDelete: Cascade)
+  Author              User                     @relation("Author", fields: [authorID], references: [id], onDelete: Cascade)
+  city                City?                    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  unit                Unit?                    @relation(fields: [unitID, unitName], references: [id, name], onDelete: Cascade)
+  sentToGroups        MessageToGroup[]
+  keywords            keywordForFreeRequests[]
+  sentTo              message[]
+  categorie           Category[]
+  spams               SpamRequests[]
+  acceptedBy          User[]                   @relation("acceptedBy")
 }
 
-
-
-
-
-
-//blog part///////////////
 model Blog {
-  id        Int                  @id @default(autoincrement())
-  title     String
-  describe  String
-  imgsrc    String?
-  date      DateTime             @default(now())
-  likes     Int                  @default(0)
-  seenTime  Int                  @default(0)
-  comments  commentsForBlog[]
-  authorId  Int?
-  author    SuperUser            @relation(fields: [id],references: [id],onDelete: Cascade)
-  keywords  keywordForBlog[]     @relation()
-  category  CategoryForBlog[]    @relation() 
+  id       Int               @id @default(autoincrement())
+  date     DateTime          @default(now())
+  describe String
+  likes    Int               @default(0)
+  title    String
+  imgsrc   String?
+  seenTime Int               @default(0)
+  authorId Int?
+  author   SuperUser         @relation(fields: [id], references: [id], onDelete: Cascade)
+  comments commentsForBlog[]
+  category CategoryForBlog[]
+  keywords keywordForBlog[]
 }
-
-
 
 model CategoryForBlog {
-  id                Int             @id @default(autoincrement())
-  name              String          @unique
-  blog              Blog[]
-  @@unique([id,name])
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  blog Blog[]
+
+  @@unique([id, name])
 }
-
-
 
 model commentsForBlog {
-  id            Int     @id @default(autoincrement())
-  blogID        Int?
-  blog          Blog?   @relation(fields: [blogID],references: [id],onDelete: Cascade)
-  AuthorID      Int?
-  commentAuthor User?   @relation(fields: [AuthorID],references: [id],onDelete: Cascade)
-  repliedComments   commentsForBlogComments[]
-  message       String  @default("")
-  date          DateTime @default(now())
+  id              Int                       @id @default(autoincrement())
+  blogID          Int?
+  AuthorID        Int?
+  message         String                    @default("")
+  date            DateTime                  @default(now())
+  commentAuthor   User?                     @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  blog            Blog?                     @relation(fields: [blogID], references: [id], onDelete: Cascade)
+  spams           SpamCommentsOnBlog[]
+  repliedComments commentsForBlogComments[]
 }
-
-
 
 model keywordForBlog {
-  id       Int  @id @default(autoincrement())
-  name     String
-  blog     Blog[]
+  id   Int    @id @default(autoincrement())
+  name String
+  blog Blog[]
 }
-
 
 model keywordForFreeRequests {
-  id       Int  @id @default(autoincrement())
-  name     String
-  request     FreeRequests  @relation(fields: [requestId],references: [id],onDelete: Cascade)
-  requestId   Int
+  id        Int          @id @default(autoincrement())
+  name      String
+  requestId Int
+  request   FreeRequests @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
-
 
 model keywordForProducts {
-  id       Int  @id @default(autoincrement())
-  name     String
-  product     Product  @relation(references: [id],fields: [productId],onDelete: Cascade)
-  productId   Int
+  id        Int     @id @default(autoincrement())
+  name      String
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-
 model commentsForBlogComments {
-  id  Int  @id @default(autoincrement())
-  AuthorID  Int?
-  commentAuthor   User?   @relation(fields: [AuthorID],references: [id] , onDelete:  Cascade)
-  commentID   Int?
-  comment   commentsForBlog?   @relation(references: [id],fields: [commentID],onDelete: Cascade)
-  message   String  @default("")
-  date    DateTime    @default(now())
+  id            Int              @id @default(autoincrement())
+  AuthorID      Int?
+  commentID     Int?
+  message       String           @default("")
+  date          DateTime         @default(now())
+  commentAuthor User?            @relation(fields: [AuthorID], references: [id], onDelete: Cascade)
+  comment       commentsForBlog? @relation(fields: [commentID], references: [id], onDelete: Cascade)
 }
 
 model passwdReg {
-  id            Int     @id  @default(autoincrement())
-  phone         String    @unique
-  verifyCode    String  
+  id         Int    @id @default(autoincrement())
+  phone      String @unique
+  verifyCode String
 }
-
 
 model FAQ {
-  id            Int     @id  @default(autoincrement())
-  question      String
-  answer        String
-  products      Product[]
+  id       Int       @id @default(autoincrement())
+  question String
+  answer   String
+  products Product[]
 }
-
 
 model OFF {
-  id            Int     @id  @default(autoincrement())
-  off_percent   Int
-  off_count     Int
-  products      Product[]
+  id          Int       @id @default(autoincrement())
+  off_percent Int
+  off_count   Int
+  products    Product[]
 }
-
 
 model passwdReset {
-  id             Int     @id  @default(autoincrement())
-  phone          String    @unique
-  verifyCode     String  
+  id         Int    @id @default(autoincrement())
+  phone      String @unique
+  verifyCode String
 }
 
-
 model Chats {
-  id           Int   @id  @default(autoincrement())
-
-  userOne      User    @relation( fields: [userOneId], references: [id],name :"userOne",onDelete: Cascade)
-  userOneId    Int    
- 
-  userTwo      User    @relation(fields: [userTwoId], references: [id],name: "userTwo",onDelete: Cascade)
-  userTwoId    Int       
-
-  message      message[]
+  id        Int       @id @default(autoincrement())
+  userOneId Int
+  userTwoId Int
+  userOne   User      @relation("userOne", fields: [userOneId], references: [id], onDelete: Cascade)
+  userTwo   User      @relation("userTwo", fields: [userTwoId], references: [id], onDelete: Cascade)
+  message   message[]
 }
 
 model ChatGroup {
-  id                  Int   @id  @default(autoincrement())
-  group_Author        User  @relation( fields: [group_Author_id], references: [id],name :"groupAuthor",onDelete: Cascade)
-  group_Author_id     Int   @unique
-
-  group_members       User[]
-  Messages            MessageToGroup[]   
-
-  name                String
-  describe            String
-  avatar              String     
+  id              Int              @id @default(autoincrement())
+  group_Author_id Int              @unique
+  avatar          String
+  describe        String
+  name            String
+  group_Author    User             @relation("groupAuthor", fields: [group_Author_id], references: [id], onDelete: Cascade)
+  Messages        MessageToGroup[]
+  group_members   User[]
 }
-
 
 model MessageToGroup {
-  id          Int             @id   @default(autoincrement())
- 
+  id          Int           @id @default(autoincrement())
   chatID      Int
-  chat        ChatGroup       @relation(references: [id],fields: [chatID],onDelete:Cascade)
-  
-  sender      User            @relation( fields: [senderId], references: [id],name :"SenderToGroup",onDelete: Cascade)
-  senderId    Int     
- 
-  messageType ChatType        @default(message)
-  image       String?         @default("")
-  voice       String?         @default("")
-  pdf         String?         @default("")
+  senderId    Int
+  image       String?       @default("")
+  voice       String?       @default("")
+  pdf         String?       @default("")
   text        String?
   replyedTo   Int?
-
-  date        DateTime        @default(now())
-  hasSeen     Boolean         @default(false)
-  liked       Boolean         @default(false) 
-
-
-  product     Product?        @relation(references: [id],fields: [productId],onDelete: Cascade)
+  date        DateTime      @default(now())
+  hasSeen     Boolean       @default(false)
+  liked       Boolean       @default(false)
   productId   Int?
-  request     FreeRequests?   @relation(references: [id],fields: [requestId],onDelete: Cascade)
   requestId   Int?
+  messageType ChatType      @default(message)
+  chat        ChatGroup     @relation(fields: [chatID], references: [id], onDelete: Cascade)
+  product     Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  request     FreeRequests? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender      User          @relation("SenderToGroup", fields: [senderId], references: [id], onDelete: Cascade)
 }
-
 
 model message {
-  id          Int             @id   @default(autoincrement())
- 
+  id          Int           @id @default(autoincrement())
   chatID      Int
-  chat        Chats           @relation(fields: [chatID],references: [id],onDelete: Cascade)
-  
-  sender      User            @relation( fields: [senderId], references: [id],name :"Sender",onDelete: Cascade)
-  senderId    Int     
- 
-  reciever    User            @relation(fields: [recieverId], references: [id],name: "Receiver",onDelete: Cascade)
-  recieverId  Int 
-  
-
-  messageType ChatType        @default(message)
-  image       String?         @default("")
-  voice       String?         @default("")
-  pdf         String?         @default("")
+  date        DateTime      @default(now())
   text        String?
-  replyedTo   Int?
-
-  date        DateTime        @default(now())
-  hasSeen     Boolean         @default(false)
-  liked       Boolean         @default(false) 
-
-
-  product     Product?        @relation(references: [id],fields: [productId],onDelete: Cascade)
+  hasSeen     Boolean       @default(false)
+  recieverId  Int
+  senderId    Int
+  image       String?       @default("")
+  voice       String?       @default("")
+  liked       Boolean       @default(false)
+  pdf         String?       @default("")
+  file_orginal_name String?       @default("")
+  file_size        String?       @default("")
   productId   Int?
-  request     FreeRequests?   @relation(references: [id],fields: [requestId],onDelete: Cascade)
+  replyedTo   Int?
   requestId   Int?
-  
+  messageType ChatType      @default(message)
+  chat        Chats         @relation(fields: [chatID], references: [id], onDelete: Cascade)
+  product     Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reciever    User          @relation("Receiver", fields: [recieverId], references: [id], onDelete: Cascade)
+  request     FreeRequests? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender      User          @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  spams       SpamMessages[]
 }
-
 
 model Unit {
-  id        Int           @id @default(autoincrement())
-  name      String        @unique
-  products  Product[]     
-  requests  FreeRequests[]
-  @@unique([id,name])
+  id       Int            @id @default(autoincrement())
+  name     String         @unique
+  requests FreeRequests[]
+  products Product[]
+
+  @@unique([id, name])
 }
 
-
-/////// SUPER_USER_PART
+/// //// SUPER_USER_PART
 model SuperUser {
-  id        Int           @id @default(autoincrement())
-  email     String?        @unique
-  phone     String        @unique
-  name      String?       @unique
-  address   String?
-  password  String 
-  Role      superUserRole      @default(full_access)
-  avatar    String?
-  blogs     Blog[]        @relation()
-  tickets   Ticket[]      @relation()
+  id       Int           @id @default(autoincrement())
+  email    String?       @unique
+  phone    String        @unique
+  name     String?       @unique
+  password String
+  Role     superUserRole @default(full_access)
+  avatar   String?
+  address  String?
+  blogs    Blog?
+  tickets  Ticket[]
 }
 
 
 
-//enums and types/////////////////////////////////////////////////////////
+
+model SpamProducts {
+
+  id        Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime      @default(now())
+  productId Int
+  product   Product       @relation(fields: [productId] , references: [id] ,onDelete: Cascade)
+  spamType  SpamType      @default(violence)
+
+
+}
+
+model SpamMessages {
+  id        Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime      @default(now())
+  messageId Int
+  message   message       @relation(fields: [messageId] , references: [id] ,onDelete: Cascade)
+  spamType  SpamType      @default(violence)
+}
+
+
+model SpamRequests {
+  id        Int                 @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  FreeRequestId Int
+  FreeRequest  FreeRequests     @relation(fields: [FreeRequestId] , references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+
+model SpamUsers {
+  id       Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  userId Int
+  user   User       @relation(fields: [userId] , references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+model SpamSellers {
+  id       Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  sellerId Int
+  seller   sellerProfile       @relation(fields: [sellerId] , references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+model SpamCommentsOnBlog {
+  id       Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  CommentId Int
+  Comment   commentsForBlog     @relation(fields: [CommentId],references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+model SpamCommentsOnProducts {
+  id       Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  CommentId Int
+  Comment   commentsForProducts     @relation(fields: [CommentId],references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+model SpamCommentsOnSellers {
+  id       Int           @id @default(autoincrement())
+  author_phone  String?
+  date      DateTime            @default(now())
+  CommentId Int
+  Comment   commentsForSellers     @relation(fields: [CommentId],references: [id] ,onDelete: Cascade)
+  spamType  SpamType            @default(violence)
+}
+
+
+
 enum userRole {
   Buyer
   Seller
@@ -677,13 +647,11 @@ enum ProductStatus {
   accepted
 }
 
-
 enum RequestStatus {
   pending
   rejected
   accepted
 }
-
 
 enum superUserRole {
   full_access
@@ -695,9 +663,9 @@ enum superUserRole {
 
 enum Rates {
   one
-  two 
+  two
   three
-  four 
+  four
   five
   unset
 }
@@ -705,4 +673,11 @@ enum Rates {
 enum ChatType {
   remittance
   message
+}
+
+enum SpamType {
+  sexual
+  Phishing
+  bot
+  violence
 }
