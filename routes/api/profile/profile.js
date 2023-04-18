@@ -97,9 +97,6 @@ profileRoute.post("/update", authorizeMiddleware, async (req, res) => {
         })
 })
 
-
-
-
 profileRoute.post("/update-profile-detailes", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
     const { name , family } = req.body
@@ -124,7 +121,6 @@ profileRoute.post("/update-profile-detailes", authorizeMiddleware, async (req, r
         })
 })
 
-
 profileRoute.post("/update-bio", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
     const { bio } = req.body
@@ -143,7 +139,6 @@ profileRoute.post("/update-bio", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "ارور در فیلد های ارسال شده" })
         })
 })
-
 
 profileRoute.post("/update-publics", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
@@ -170,7 +165,6 @@ profileRoute.post("/update-publics", authorizeMiddleware, async (req, res) => {
         })
 })
 
-
 profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
     const { name, bio, email } = req.body
@@ -191,7 +185,6 @@ profileRoute.post("/update-uniqe", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "ارور در فیلد های ارسال شده" })
         })
 })
-
 
 profileRoute.post("/update-city", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
@@ -215,8 +208,6 @@ profileRoute.post("/update-city", authorizeMiddleware, async (req, res) => {
             return res.json({ err: "ارور در فیلد های ارسال شده" })
         })
 })
-
-
 
 profileRoute.get("/my-role", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
@@ -245,7 +236,6 @@ profileRoute.get("/my-avatar", authorizeMiddleware, async (req, res) => {
             return res.json({ err: 1 })
         })
 })
-
 
 profileRoute.get("/my-intresting-products", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
@@ -284,7 +274,6 @@ profileRoute.get("/my-intresting-products", authorizeMiddleware, async (req, res
         })
 })
 
-
 profileRoute.post("/add-to-intresting-products", authorizeMiddleware, async (req, res) => {
     const { userPhone } = req?.userData
     const {id} = req.body
@@ -320,7 +309,7 @@ profileRoute.post("/delete-from-intresting-products", authorizeMiddleware, async
             },
             data : {
                 savedProducts : {
-                    delete : {
+                    disconnect : {
                         id : Number(id)
                     }
                 }
@@ -373,8 +362,6 @@ profileRoute.post("/become-seller", authorizeMiddleware, async (req, res) => {
             return res.json({ err: 1 ,e })
         })
 })
-
-
 
 
 export { profileRoute }

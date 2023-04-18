@@ -284,6 +284,14 @@ mediaRoute.post(
         console.log(req.files)
         console.log(req.userData.userPhone)
 
+        const previusImage = await prisma.product.findFirst({
+            where : {
+                id : Number(productID)
+            }
+        }).catch((err)=>{
+            return res.json({err : 'محصول یافت نشد'})
+        })
+
 
         await prisma.user
             .update({
@@ -299,9 +307,9 @@ mediaRoute.post(
                                     id: Number(productID),
                                 },
                                 data: {
-                                    image: req.files.product_1?.at(0)?.path ? `/${req.files.product_1.at(0).path}` : null,
-                                    image_2 : req.files?.product_2?.at(0)?.path ? `/${req.files.product_2.at(0).path}` : null,
-                                    image_3 : req.files?.product_3?.at(0)?.path ? `/${req.files.product_3.at(0).path}` : null
+                                    image: req.files.product_1?.at(0)?.path ? `/${req.files.product_1.at(0).path}` : previusImage.image,
+                                    image_2 : req.files?.product_2?.at(0)?.path ? `/${req.files.product_2.at(0).path}` : previusImage.image_2,
+                                    image_3 : req.files?.product_3?.at(0)?.path ? `/${req.files.product_3.at(0).path}` : previusImage.image_3
                                 },
                             },
                         }

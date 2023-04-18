@@ -111,7 +111,6 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
 
 })
 
-
 productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
     const {
         id,
@@ -125,11 +124,14 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
         weight,
         deliveryTime,
         keyword_list,
+        quantity,
         cat_id,
         city_id,
-        offPercent,
-        freeDelivery,
         sendArea_list,
+        unit,
+        offPercent,
+        offCount,
+        freeDelivery,
         add_story
     } = req.body
 
@@ -150,40 +152,52 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                                     data : {
                                         city : {
                                             connect : {
-                                                id : Number(city_id)
+                                                id : city_id ?  Number(city_id) : 1160
                                             },
                                         },
                                         keywords : {
                                             createMany : {
-                                                data : keyword_list
+                                                data : keyword_list.map(elm=>{
+                                                    return (
+                                                        {
+                                                            name : elm.name
+                                                        }
+                                                    )
+                                                })
                                             },
                                         },
                                         categorie : {
                                             connect : {
-                                                id : Number(cat_id)
+                                                id : cat_id ?  Number(cat_id) : 1
                                             }
                                         },
-                                        categorie : {
-                                            connect : {
-                                                id : Number(cat_id)
+                                        off : {
+                                            create : {
+                                                off_count : offCount && offPercent ? Number(offCount) : 0,
+                                                off_percent : offCount && offPercent ? Number(offPercent) : 0,
                                             }
                                         },
                                         // categorieID : Number(cat_id),
                                         sendArea : {
                                             connect : sendArea_list
                                         },
+                                        unit : {
+                                            connect : {
+                                                id : unit ? Number(unit) : 1
+                                            }
+                                        },  
                                         customerPrice : Number(customerPrice),
                                         producerPrice : Number(producerPrice),
                                         price : Number(price),
-                                        minOrder : Number(minOrder),
-                                        weight : weight,
+                                        minOrder : minOrder ?  Number(minOrder) : 1,
+                                        weight : weight ? String(weight) : '',
                                         describe : describe,
                                         title : title,
-                                        deliveryTime : deliveryTime,
+                                        deliveryTime : deliveryTime ?  String(deliveryTime).trim() : '1',
                                         packType : packType ? packType : "kg",
                                         freeDelivery : freeDelivery ? freeDelivery : false,
-                                        offPercent : offPercent ? Number(offPercent) : null,
-                                    }
+                                        quantity : quantity ? Number(quantity) : 1,
+                                    },
                                 }
                             }
                         }
@@ -422,7 +436,12 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
                                         }
                                     }
                                 }
-                            }
+                            },
+                            categorie : true,
+                            keywords : true,
+                            off : true,
+                            sendArea : true,
+                            
                         },
                     }
                 }
@@ -436,7 +455,6 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
     
 
 })
-
 
 productsRoute.get("/saved-products", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
@@ -459,8 +477,6 @@ productsRoute.get("/saved-products", authorizeMiddleware, async (req, res) => {
     
 
 })
-
-
 
 productsRoute.get("/mine/rejected", authorizeMiddleware, async (req, res) => {
     const { start, length } = req.query
@@ -548,7 +564,76 @@ productsRoute.get("/mine/accepted", authorizeMiddleware, async (req, res) => {
     })
 })
 
+productsRoute.get("/mine/all-status", authorizeMiddleware, async (req, res) => {
+    
+    const accepted = await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "accepted"
+                        }
+                    }
+                }
+            }
+        }
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e })
+    })
 
+
+    const rejected = await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "rejected"
+                        }
+                    }
+                }
+            }
+        }
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e })
+    })
+
+
+    const pending = await prisma.user.findFirst({
+        where : {
+            phone : req.userData.userPhone
+        },
+        include : {
+            sellerProfile : {
+                select : {
+                    products : {
+                        where : {
+                            productStatus : "pending"
+                        }
+                    }
+                }
+            }
+        }
+    }).catch((e)=>{
+        return res.json({err : "اشکال در لود دیتا" , e })
+    })
+
+
+    try {
+        const response = {accepted ,rejected,pending}
+        return res.json(response)
+    } 
+    catch { 
+        return res.json({err : 'خطا هنگام ارسال اطلاعات از سمت سرور'})
+    }
+})
 
 productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
     const {id} = req.query
@@ -583,7 +668,6 @@ productsRoute.get("/mine-single", authorizeMiddleware, async (req, res) => {
         return res.json({err : "محصول یافت نشد"  , e})
     })
 })
-
 
 productsRoute.post("/delete", authorizeMiddleware, async (req, res) => {
     const { id } = req.body

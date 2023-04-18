@@ -676,8 +676,10 @@ enum ChatType {
 }
 
 enum SpamType {
-  sexual
-  Phishing
-  bot
   violence
+  unethical
+  Phishing
+  inviteLink
+  Nuisance
+  racism
 }

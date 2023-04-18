@@ -144,9 +144,14 @@ usersRoute.get("/story", async (req, res) => {
                         where : {
                             date : {
                                 gte : new Date(lastDay).toISOString()
-                            }
+                            },
                         },
                         include : {
+                            product : {
+                                include : {
+                                    city : true
+                                }
+                            },    
                             author : {
                                 include : {
                                     user : {
@@ -162,9 +167,11 @@ usersRoute.get("/story", async (req, res) => {
            }
         }
     }).then(data=>{
-        excludePass(data,['password'])
-        return res.json(data.sellerProfile.stories)
-    }).catch(()=>{
+        console.log('err')
+        // excludePass(data,['password'])
+        return res.json(data?.sellerProfile?.stories)
+    }).catch((e)=>{
+        console.log(e)
         return res.json({err : 'خطا در لود استوری'})
     })
 })
