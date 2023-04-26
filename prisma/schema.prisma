@@ -34,6 +34,7 @@ model User {
   profile                    Profile?
   requestsProducts           RequestOnProducts[]
   tickets                    Ticket[]
+  ticketMessages             Ticketmessage[]
   commentsBlog               commentsForBlog[]
   commentsOnBlogComments     commentsForBlogComments[]
   commentsProducts           commentsForProducts[]
@@ -110,13 +111,30 @@ model sellerProfile {
 model Ticket {
   id             Int          @id @default(autoincrement())
   userID         Int
-  message        String
-  status         TicketStatus
-  response       String       @default("")
+  status         TicketStatus @default(pending)
   responseBy     Int?
   title          String       @default("")
-  responseAuthor SuperUser?   @relation(fields: [responseBy], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userID], references: [id], onDelete: Cascade)
+  messages       Ticketmessage[]
+}
+
+
+model Ticketmessage {
+  id          Int           @id @default(autoincrement())
+  ticketID    Int
+  userID      Int?
+  adminID     Int?
+  date        DateTime      @default(now())
+  text        String?
+  hasSeen     Boolean       @default(false)
+  image       String?       @default("")
+  voice       String?       @default("")
+  pdf         String?       @default("")
+  file_orginal_name String? @default("")
+  file_size     String?     @default("")
+  user          User?       @relation(fields: [userID],   references: [id], onDelete: Cascade)
+  admin         SuperUser?  @relation(fields: [adminID],  references: [id], onDelete: Cascade)
+  Ticket        Ticket      @relation(fields: [ticketID], references: [id], onDelete: Cascade)
 }
 
 model Profile {
@@ -527,7 +545,7 @@ model SuperUser {
   avatar   String?
   address  String?
   blogs    Blog?
-  tickets  Ticket[]
+  ticketMessages  Ticketmessage[]
 }
 
 

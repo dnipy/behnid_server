@@ -120,6 +120,77 @@ sellersRoute.get("/single", async (req, res) => {
 })
 
 
+sellersRoute.get("/all-stories", authorizeMiddleware , async (req, res) => {
+
+    await prisma.user
+        .findFirst({
+            where: {
+                Role: "Seller",
+                phone : req.userData.userPhone
+            },
+            include : {
+                profile : true,
+                sellerProfile : {
+                    include : {
+                        stories : {
+                            include :{
+                                product : {
+                                    include : {
+                                        city : true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .then((data) => {
+            excludePass(data,['password'])
+            if (data.Role === 'Buyer') return res.json({err : 'شما فروشنده نیستید'})
+            else {
+                return res.json(data)
+            }
+        })
+        .catch((e) => {
+            return res.json({ err: e })
+        })
+})
+
+
+sellersRoute.post("/delete-story", authorizeMiddleware , async (req, res) => {
+    // const { start, length } = req.query
+    // if (!start || !length)
+    //     return res.json({ err: "کوئری پارام های شروع و طول وارد نشده!" })
+    const {id} = req.body
+
+    if (!id) return res.json({err : 'ایدی استوری وارد نشده است'})
+
+    await prisma.user
+        .update({
+            where: {
+                phone : req.userData.userPhone
+            },
+            data : {
+                sellerProfile : {
+                    update : {
+                        stories : {
+                            delete : {
+                                id : Number(id)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .then(() => {
+            return res.json({msg : 'موفق'})
+        })
+        .catch((e) => {
+            return res.json({ err: 'خطا هنگام حذف استوری' })
+        })
+})
+
 sellersRoute.get("/by-name", async (req, res) => {
     const { SellerName } = req.query
     if (!SellerName) return res.json({ err: "آیدی فروشنده را وارد کنید" })
