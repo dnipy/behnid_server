@@ -6,7 +6,7 @@ import cluster from "cluster"
 import os from "os"
 import compression from 'compression'
 import webpush from 'web-push'
-
+import morgan from "morgan"
 
 
 // * modules-Import
@@ -15,6 +15,7 @@ import { apiRoute } from "./routes/api.routes.js"
 import { superAdminRoute } from "./routes/superadmin.routes.js"
 import bodyParser from "body-parser"
 import { customCors } from "./middlewares/customCORS.js"
+// import { VAPID_KEY  } from "./configs/webpush.js"
 
 if (process.env.NODE_ENV === "prod") {
   console.log = function () {};
@@ -47,14 +48,24 @@ if (cluster.isMaster) {
 
     // ? middlewares
     app.use(express.json())
+    app.use(morgan('tiny'))
     app.use(helmet({ crossOriginResourcePolicy: false , expectCt : false }))
     app.use(compression())
     app.use(bodyParser.urlencoded({ extended: false }))
     app.set("view engine", "ejs")
     app.use(customCors);
+    // webpush.setVapidDetails("mailto:dnipy@protonmail.com",VAPID_KEY.publicKey,VAPID_KEY.privateKey)
 
     // ? Routes
     app.get("/", indexController)
+    // app.post("/web-push-subscription", (req,res)=>{
+    //   console.log('req for web-push')
+    //   const subscription = req.body;
+    //   res.status(201).json({})
+    //   const payload = JSON.stringify({title : 'dnipy push test'})
+
+    //   webpush.sendNotification(subscription,payload).catch(err=>console.log(err))
+    // })
     app.use("/api", apiRoute)
     app.use("/super-admin", superAdminRoute)
 

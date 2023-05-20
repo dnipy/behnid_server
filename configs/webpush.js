@@ -2,12 +2,13 @@ import webpush from 'web-push'
 
 
 export const VAPID_KEY = {
-    publicKey : "BAunpsSIpYbTmBW2aEm6c2ov5KoX1XSyLOIV83prWsrh745rXwAxsP-iTgDVAUMkNXX0opyBxCGhY1h8V6DVjJ4",
-    privateKey : "R2ua6vI5Ac5QbCBpTBKyqtr6AaufbbvwGS847pzfSiI"
+    publicKey : "BHvpZKlLjdn8NqwHD5QOW2PUya580SUmiTyewT-bV__sfpjznRgNjrAKhXvYrOWIsSSabF0C7cM0SLctypU4RZk",
+    privateKey : "FrNG3HiRr4eet3WJYlZD9lGNM4i52vpUl99m6lQgQNk"
 }
 
+
 const subscription = {
-    endpoint: '/web-push-server-end-point',
+    endpoint: '/web-push-subscription',
     keys: {
         auth: '',
         p256dh: '',
@@ -42,11 +43,11 @@ const payload = {
 
 const options = {
     vapidDetails: {
-        subject: 'mailto:behnid.com@gmail.com',
+        subject: 'mailto:dnipy@protonmail.com',
         publicKey: VAPID_KEY.publicKey,
         privateKey: VAPID_KEY.privateKey,
     },
     TTL: 60,
 };
 
-export const sendNotif = webpush.sendNotification(subscription,JSON.stringify(payload),options)
+// export const sendNotif = webpush.sendNotification(subscription,JSON.stringify(payload),options)

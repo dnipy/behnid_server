@@ -1,29 +1,31 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
 
-const AdminUserRoute = express.Router()
+const AdminRequetsRoute = express.Router()
 const prisma = new PrismaClient()
 
 
-AdminUserRoute.get('/',async(req,res)=>{
-    const User = await prisma.user.findMany({
+AdminRequetsRoute.get('/',async(req,res)=>{
+    const requests = await prisma.freeRequests.findMany({
         include : {
-            profile : {
+            Author : {
                 select : {
+                    phone : true,
                     name : true,
-                    family : true,
-                    instaAcc : true
+                    id : true
                 }
             }
         }
     })
-    return res.json(User)
+    return res.json(requests)
 })
 
-AdminUserRoute.get('/:id',async(req,res)=>{
+
+
+AdminRequetsRoute.get('/:id',async(req,res)=>{
     const {id} = req.params
 
-    const User = await prisma.user.findFirst({
+    await prisma.freeRequests.findFirst({
         where : {
             id : Number(id)
         },
@@ -40,25 +42,33 @@ AdminUserRoute.get('/:id',async(req,res)=>{
                     }
                 }
             },
-            sellerProfile : {
-                select :{
-                    id : true,
-                    shopName : true,
+            Author : {
+              select : {
+                id : true,
+                phone : true,
+                profile : {
+                    select : {
+                        id : true,
+                        name : true,
+                        family : true
+                    }
                 }
+              }  
             },
-            profile : {
+            keywords : true,
+            unit : {
                 select : {
                     id : true,
-                    name : true,
-                    family : true,
+                    name : true
                 }
-            },
+            }
         }
     }).then((resp=>{
         return res.json(resp)
     })).catch((err)=>{
         return res.status(404).json(err)
     })
-    })
+})
 
-export {AdminUserRoute}
+
+export {AdminRequetsRoute}
