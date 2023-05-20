@@ -75,7 +75,10 @@ usersRoute.get("/single", authorizeMiddleware ,async (req, res) => {
                 }
             },
             freeRequests : {
-                take : 3 
+                take : 3,
+                include : {
+                    city : true
+                } 
             },
             sellerProfile : {
                 include : {
