@@ -28,6 +28,7 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
                 tickets: true,
                 sellerProfile: {
                     include : {
+                        ActivityCategory : true,
                         products : true,
                         stories : {
                             where : {

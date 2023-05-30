@@ -18,3 +18,10 @@ export const product_photos = [
     { name: "product_2", maxCount: 1 },
     { name: "product_3", maxCount: 1 },
 ]
+
+export const sellerSite_photos = [
+    { name: "gallery_1", maxCount:  1},
+    { name: "gallery_2", maxCount:  1},
+    { name: "gallery_3", maxCount:  1},
+
+]

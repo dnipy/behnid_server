@@ -6,6 +6,13 @@ const prisma = new PrismaClient()
 
 
 AdminProductRoute.get('/',async(req,res)=>{
+    const {range} = req.query
+    let start = 0;
+    let end =  9 ;
+    if (range) {
+        start = JSON.parse(range)[0];
+        end = JSON.parse(range)[1];
+    }
     const products = await prisma.product.findMany({
         include : {
             author : {
@@ -22,7 +29,9 @@ AdminProductRoute.get('/',async(req,res)=>{
                 }
             },
             
-        }
+        },
+        take : 10,
+        skip : start 
     })
     return res.json(products)
 })
@@ -83,5 +92,64 @@ AdminProductRoute.get('/:id',async(req,res)=>{
     })
 })
 
+AdminProductRoute.post('/disable/:id',async(req,res)=>{
+    const {id} = req.params
+
+    await prisma.product.update({
+        where : {
+            id : Number(id),
+        },
+        data : {
+            isShown : false,
+        }
+        
+    }).then((resp=>{
+        return res.json(resp)
+    })).catch((err)=>{
+        return res.status(404).json(err)
+    })
+})
+
+
+AdminProductRoute.post('/accept/:id',async(req,res)=>{
+    const {id} = req.params
+
+    await prisma.product.update({
+        where : {
+            id : Number(id),
+        },
+        data : {
+            productStatus : 'accepted',
+            isShown : true
+        }
+        
+    }).then((resp=>{
+        return res.json(resp)
+    })).catch((err)=>{
+        return res.status(404).json(err)
+    })
+})
+
+
+AdminProductRoute.post('/reject/:id',async(req,res)=>{
+    const {id} = req.params
+    const {reason} = req.body
+
+    const User = await prisma.product.update({
+        where : {
+            id : Number(id),
+        },
+        data : {
+            productStatus : 'rejected',
+            rejectReason : reason, 
+            isShown : false
+        }
+        
+    }).then((resp=>{
+        return res.json(resp)
+    })).catch((err)=>{
+        return res.status(404).json(err)
+    })
+})
 
 export {AdminProductRoute}

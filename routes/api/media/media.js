@@ -6,6 +6,7 @@ import {
     company_authorize,
     Person_authorize,
     product_photos,
+    sellerSite_photos,
 } from "../../../configs/multiple_fields.js"
 import { uploadAudio } from "../../../middlewares/voice_uploads.js"
 import { uploadPdf } from "../../../middlewares/pdf_upload.js"
@@ -176,12 +177,80 @@ mediaRoute.post(
                     userID: user_id?.id,
                 },
                 data : {
-                    site_header : req.file.path ? req.file.path : ""
+                    site_header : req.file.path ?"/"+ req.file.path : ""
                 },
                
             })
             .then((data) => {
                 return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور", e })
+            })
+    }
+)
+
+mediaRoute.post(
+    "/seller/add-site_avatar",
+    authorizeMiddleware,
+    uploads.single("seller_site_avatar"),
+    async (req, res) => {
+
+        const user_id = await prisma.user.findFirst({
+            where: { phone: req?.userData?.userPhone },
+        })
+
+        if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
+        
+
+        await prisma.sellerProfile
+            .update({
+                where: {
+                    userID: user_id?.id,
+                },
+                data : {
+                    site_avatar : req.file.path ? '/'+req.file.path : ""
+                },
+               
+            })
+            .then((data) => {
+                return res.json(data)
+            })
+            .catch((e) => {
+                return res.json({ err: "ارور", e })
+            })
+    }
+)
+
+mediaRoute.post(
+    "/seller/add-site-gallery",
+    authorizeMiddleware,
+    uploads.fields(sellerSite_photos),
+    async (req, res) => {
+        console.log(req.files)
+
+        const user_id = await prisma.user.findFirst({
+            where: { phone: req?.userData?.userPhone },
+        })
+
+        if (!req.files) return res.json({err : "عکس اپلود نشده"})
+        const { gallery_1,gallery_2,gallery_3 } = req?.files
+        console.log(req.files)
+
+        await prisma.sellerProfile
+            .update({
+                where: {
+                    userID: user_id?.id,
+                },
+                data : {
+                    site_optional_1 : gallery_1 ? '/' + gallery_1[0].path : '',
+                    site_optional_2 : gallery_2 ? '/' + gallery_2[0].path : '',
+                    site_optional_3 : gallery_3 ? '/' + gallery_3[0].path : '',
+                },
+               
+            })
+            .then((data) => {
+                return res.json({msg : 'موفق'})
             })
             .catch((e) => {
                 return res.json({ err: "ارور", e })

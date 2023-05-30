@@ -94,6 +94,7 @@ productsRoute.post("/add", authorizeMiddleware, async (req, res) => {
                 packType : packType ? packType : "kg",
                 freeDelivery : freeDelivery ? freeDelivery : false,
                 quantity : quantity ? Number(quantity) : 1,
+                isShown : false
             },
         }).then((data) => {
                 return res.json({
@@ -304,8 +305,8 @@ productsRoute.post("/update-to-show", authorizeMiddleware, async (req, res) => {
 })
 
 productsRoute.get("/all", async (req, res) => {
-    const { start, length } = req.query
-    if (!start || !length)
+    const { start} = req.query
+    if (!start )
         return res.json({ msg: "need both start and length query-params!" })
 
 
@@ -318,7 +319,7 @@ productsRoute.get("/all", async (req, res) => {
                     productStatus : "accepted"
                 },
                 skip: Number(start) - 1,
-                take: Number(length),
+                take:10,
                 include: {
                     city: true,
                     author: {

@@ -106,6 +106,7 @@ model sellerProfile {
   ActivityCategory Category[]
   responseToCities City[]
   spams            SpamSellers[]
+  rejectReason     String?
 }
 
 model Ticket {

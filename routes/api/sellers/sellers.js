@@ -431,9 +431,8 @@ sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
 
 
 sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
-    const { SellerID , cat_list } = req.body
+    const { cat_list } = req.body
     const { userPhone } = req?.userData
-    if (!SellerID) return res.json({ err: "آیدی فروشنده را وارد کنید" })
     if (!cat_list ) return res.json({err : "شهر انتخاب نشده"})
 
     const user = await prisma.user.findUnique({
@@ -510,7 +509,7 @@ sellersRoute.post("/add-shop-name",authorizeMiddleware,async (req, res) => {
 sellersRoute.post("/add-shop-intro",authorizeMiddleware,async (req, res) => {
     const {  intro } = req.body
     const { userPhone } = req?.userData
-    if (!intro || String(intro).length < 20 ) return res.json({err : "توضیحات فروشگاه باید بالای 20 رقم باشد"})
+    if (!intro || String(intro).length < 19 ) return res.json({err : "توضیحات فروشگاه باید بالای 20 رقم باشد"})
 
     const user = await prisma.user.findUnique({
         where : {
@@ -573,6 +572,61 @@ sellersRoute.post("/add-shop-url",authorizeMiddleware,async (req, res) => {
                     }
                 }
             }
+        })
+        .then((data) => {
+            return res.json({msg : "موفق"})
+        })
+        .catch(() => {
+            return res.json({ err: "نام دیگری انتخاب د" })
+        })
+})
+
+sellersRoute.post("/add-shop",authorizeMiddleware,async (req, res) => {
+    const {  shopName , shopId , bio } = req.body
+    const { userPhone } = req?.userData
+
+    if (!shopName || String(shopName).length < 4 ) return res.json({err : "نام فروشگاه انتخاب نشده یا کوتاه است"})
+    if (!shopId || String(shopId).length < 4 ) return res.json({err : "آیدی فروشگاه انتخاب نشده یا کوتاه است"})
+    if (!bio || String(bio).length < 4 ) return res.json({err : "بیوگرافی فروشگاه انتخاب نشده یا کوتاه است"})
+
+    
+    const user = await prisma.user.findUnique({
+        where : {
+            phone : userPhone
+        },
+        include : {
+            sellerProfile : true
+        }
+    })
+
+    await prisma.sellerProfile.findUnique({
+        where : {
+            shopURLname : shopId
+        }
+    }).then((data)=>{
+        if (data?.shopURLname){
+            return res.json({err : 'آیدی انتخاب شده در دسترس نمی باشد . لطفا آیدی دیگری انتخاب فرمایید'})
+        }
+
+    }).catch((err)=>{
+        console.log(err)
+    })
+
+    if (!user.sellerProfile.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
+        await prisma.user.update({
+            where : {
+                phone : userPhone
+            },
+            data : {
+                sellerProfile : {
+                    update : {
+                        shopURLname : String(shopId),
+                        shopName : String(shopName),
+                        shopIntro : String(bio)
+                    }
+                },
+                Role :'Seller'
+            } 
         })
         .then((data) => {
             return res.json({msg : "موفق"})

@@ -46,7 +46,9 @@ requestsRoute.post("/FreeRequest", authorizeMiddleware, async (req, res) => {
                             }
                         },
                         quantity : quantity ? Number(quantity) : 1,
-                        request_expire_date : expire_date ? expire_date : 'نامشخص'
+                        request_expire_date : expire_date ? expire_date : 'نامشخص',
+                        status : 'pending',
+                        isShown : false
                     },
                 },
             },
@@ -104,7 +106,8 @@ requestsRoute.post("/update", authorizeMiddleware, async (req , res) => {
                                 }
                             },
                             quantity : quantity ? Number(quantity) : 1,
-                            request_expire_date : expire_date ? expire_date : 'نامشخص'
+                            request_expire_date : expire_date ? expire_date : 'نامشخص',
+                            status : 'pending'
                     },
 
                     },
@@ -156,17 +159,18 @@ requestsRoute.get("/single-mine",authorizeMiddleware ,async (req, res) => {
 
 
 requestsRoute.get("/all", async (req, res) => {
-    const { start, length } = req.query
-    if (!start || !length)
-        return res.json({ err: "need both start and length query-params!" })
+    const { start } = req.query
+    if (!start )
+        return res.json({ err: "پارامتر های درخواست کامل نیست" })
 
     await prisma.freeRequests
         .findMany({
             where : {
-                isShown : true
+                isShown : true,
+                status : 'accepted'
             },
             skip: parseInt(start) - 1,
-            take: parseInt(length),
+            take: 10,
             orderBy : {
                 date : 'desc'
             },
@@ -345,7 +349,7 @@ requestsRoute.get('/all-mine',authorizeMiddleware,async(req,res)=>{
                     },
                 },
             },
-        }).catch((e) => {
+        }).catch((e) => { 
             return res.json({ msg: e , e : 'خطا هنگام دریافت در انتظار ها' })
     })
 

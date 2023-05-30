@@ -117,6 +117,78 @@ usersRoute.get("/single", authorizeMiddleware ,async (req, res) => {
 })
 
 
+usersRoute.get("/single/mine", authorizeMiddleware ,async (req, res) => {
+    const { userPhone } = req?.userData
+
+    await prisma.user.findFirst({
+        where: {
+                 phone : userPhone
+        },
+        include : {
+            connection : {
+                include : {
+                    follower :{
+                        select : {
+                            id : true,
+                            phone : true
+                        }
+                    },
+                    following :{
+                        select : {
+                            id : true
+                        }
+                    },
+                }
+            },
+            profile : {
+                select : {
+                    name : true,
+                    family : true
+                }
+            },
+            freeRequests : {
+                take : 3,
+                include : {
+                    city : true
+                } 
+            },
+            sellerProfile : {
+                include : {
+                    products : {
+                        include : {
+                            city : true,
+                            unit : true,
+                        }
+                    }
+                }
+            },
+            
+        }
+    }).then(data=>{
+        excludePass(data,['password'])
+        data.connection.follower.forEach(elm=>{
+            excludePass(elm,['password'])
+        })
+        data.connection.following.forEach(elm=>{
+            excludePass(elm,['password'])
+        })
+        data?.connection?.follower?.forEach((elm)=>{
+            if (elm.phone == userPhone) {
+                data.FollowedByME = true
+                excludePass(elm,['phone'])
+            }
+            else {
+                data.FollowedByME = false
+                excludePass(elm,['phone'])
+            }
+        })
+        return res.json(data)
+    }).catch(()=>{
+        return res.json({err : 'کاربری پیدا نشد'})
+    })
+})
+
+
 usersRoute.get("/story", async (req, res) => {
     const { userID } = req.query
 
