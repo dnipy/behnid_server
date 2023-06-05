@@ -313,7 +313,7 @@ sellersRoute.post("/add-comment",authorizeMiddleware,async (req, res) => {
             data : {
                 seller : {
                     connect : {
-                        userID : Number(SellerID)
+                        id : Number(SellerID)
                     }
                 },
                 commentAuthor : {
