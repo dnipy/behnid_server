@@ -102,12 +102,13 @@ AdminRequetsRoute.post('/disable/:id',async(req,res)=>{
 AdminRequetsRoute.post('/accept/:id',async(req,res)=>{
     const {id} = req.params
 
-    const User = await prisma.freeRequests.update({
+    await prisma.freeRequests.update({
         where : {
             id : Number(id),
         },
         data : {
             status : 'accepted',
+            isShown : true
         }
         
     }).then((resp=>{

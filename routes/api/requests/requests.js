@@ -107,7 +107,8 @@ requestsRoute.post("/update", authorizeMiddleware, async (req , res) => {
                             },
                             quantity : quantity ? Number(quantity) : 1,
                             request_expire_date : expire_date ? expire_date : 'نامشخص',
-                            status : 'pending'
+                            status : 'pending',
+                            isShown : false
                     },
 
                     },
@@ -154,7 +155,7 @@ requestsRoute.get("/single-mine",authorizeMiddleware ,async (req, res) => {
         .catch(() => {
             return res.json({ err: "درخواست مورد نظر موجود نیست" })
         })
-})
+}) 
 
 
 

@@ -198,6 +198,7 @@ productsRoute.post("/update", authorizeMiddleware, async (req, res) => {
                                         packType : packType ? packType : "kg",
                                         freeDelivery : freeDelivery ? freeDelivery : false,
                                         quantity : quantity ? Number(quantity) : 1,
+                                        isShown : false
                                     },
                                 }
                             }
