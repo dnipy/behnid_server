@@ -7,7 +7,7 @@ import os from "os"
 import compression from 'compression'
 import webpush from 'web-push'
 import morgan from "morgan"
-
+import timeout from 'connect-timeout'
 
 // * modules-Import
 import { indexController } from "./controllers/index.controllers.js"
@@ -51,6 +51,7 @@ if (cluster.isMaster) {
     app.use(morgan('tiny'))
     app.use(helmet({ crossOriginResourcePolicy: false , expectCt : false }))
     app.use(compression())
+    app.use(timeout('60s'))
     app.use(bodyParser.urlencoded({ extended: false }))
     app.set("view engine", "ejs")
     app.use(customCors);

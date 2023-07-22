@@ -30,6 +30,7 @@
         "bcrypt": "^5.1.0",
         "body-parser": "^1.20.0",
         "compression": "^1.7.4",
+        "connect-timeout": "^1.9.0",
         "cors": "^2.8.5",
         "cron": "^2.2.0",
         "dotenv": "^16.0.1",

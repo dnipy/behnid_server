@@ -201,7 +201,7 @@ mediaRoute.post(
         })
 
         if (!req.file.path) return res.json({err : "عکس اپلود نشده"})
-        
+        console.log('sss')
 
         await prisma.sellerProfile
             .update({
