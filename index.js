@@ -47,12 +47,12 @@ if (cluster.isMaster) {
 
 
     // ? middlewares
-    app.use(express.json())
+    app.use(express.json({limit : '50mb'}))
     app.use(morgan('tiny'))
     app.use(helmet({ crossOriginResourcePolicy: false , expectCt : false }))
     app.use(compression())
     app.use(timeout('60s'))
-    app.use(bodyParser.urlencoded({ extended: false }))
+    app.use(bodyParser.urlencoded({ extended: false , limit : '50mb' }))
     app.set("view engine", "ejs")
     app.use(customCors);
     // webpush.setVapidDetails("mailto:dnipy@protonmail.com",VAPID_KEY.publicKey,VAPID_KEY.privateKey)

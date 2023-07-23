@@ -28,7 +28,20 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
                 tickets: true,
                 sellerProfile: {
                     include : {
-                        ActivityCategory : true,
+                        ActivityCategory : {
+                            include : {
+                                subCategory : {
+                                    select : {
+                                        mainCategory : {
+                                            select : {
+                                                name : true,
+                                                id : true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         products : true,
                         stories : {
                             where : {
@@ -58,6 +71,7 @@ profileRoute.get("/my-data", authorizeMiddleware, async (req, res) => {
             return res.json(sent_data)
         })
         .catch((e) => {
+            console.log(e)
             return res.json({ err: 'کاربر یافت نشد' })
         })
 })

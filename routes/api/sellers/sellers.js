@@ -433,7 +433,9 @@ sellersRoute.post("/add-city",authorizeMiddleware,async (req, res) => {
 sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
     const { cat_list } = req.body
     const { userPhone } = req?.userData
-    if (!cat_list ) return res.json({err : "شهر انتخاب نشده"})
+    if (!cat_list ) return res.json({err : "دسته بندی انتخاب نشده"})
+
+    console.log(cat_list)
 
     const user = await prisma.user.findUnique({
         where : {
@@ -444,8 +446,48 @@ sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
         }
     })
 
+    const categories = await prisma.mainCategory.findUnique({
+        where : {
+            id : cat_list?.at(0)?.id
+        },
+        select : {
+            name : true,
+            subCategories : {
+                select : {
+                    categories : {
+                        select : {id : true}
+                    }
+                }
+            }
+        }
+    }).catch((err)=>{
+        return res.json({err : 'خطا در پیدا کردن دسته بندی'})
+    })
+
+    const all_selected = []
+
+    categories?.subCategories?.forEach(elm=>{
+        // console.log(elm)
+        elm?.categories?.forEach(sub_elm=>{
+            all_selected.push(sub_elm)
+        })
+    })
+
+    console.log(all_selected)
+
     if (!user.sellerProfile.id) return res.json({err : "شما صاحب فروشگاه نیستید"})
         
+        await prisma.sellerProfile.update({
+            where : {
+                userPhone : userPhone
+            },
+            data : {
+                ActivityCategory : {
+                    set : all_selected
+                }
+            }
+        })
+
         await prisma.user.update({
             where : {
                 phone : userPhone
@@ -454,7 +496,7 @@ sellersRoute.post("/add-cat",authorizeMiddleware,async (req, res) => {
                 sellerProfile : {
                     update : {
                        ActivityCategory : {
-                           connect : cat_list
+                           connect : all_selected
                        }
                     }
                 }
